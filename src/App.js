@@ -501,7 +501,7 @@ Step-by-step, this is how it works:
 **Step 1 — Connect to the Platform:**
 1. Open Phoenix Controls Workbench.
 2. In the Nav sidebar, open the Platform connection to the PBC's IP address.
-3. The PBC defaults to DHCP — run `arp -a` in Windows CMD ~15 seconds after power-up to find its IP.
+3. The PBC defaults to DHCP — run \`arp -a\` in Windows CMD ~15 seconds after power-up to find its IP.
 4. Enter platform credentials (default: admin/admin on first connection — change immediately).
 
 **Step 2 — Open the Station:**
@@ -553,7 +553,7 @@ Step-by-step, this is how it works:
 - **Connecting to PCI8000**: Open Workbench → platform connection → enter PCI IP address → Fox protocol (port 1911).
 - **CRITICAL**: You cannot just swap in a PCI8000 on an existing MacroServer/LNS system and expect it to work. Upgrading from MacroServer to PCI8000 is a major project requiring database rebuilding and network reconfiguration.
 - **Optional remote I/O**: PCI8000 supports optional remote I/O modules for direct hardwired control of third-party devices (lighting, temperature sequences, air quality sensors).
-- **Vision software (MKT-0467)**: Phoenix Controls Vision is a graphical front-end that runs on the PCI8000. Configured through Workbench. Default nav file location: `C:\Niagara\PhoenixControls-4.9.x.xx\`. Must run Workbench as Administrator for upload to succeed.
+- **Vision software (MKT-0467)**: Phoenix Controls Vision is a graphical front-end that runs on the PCI8000. Configured through Workbench. Default nav file location: \`C:\\Niagara\\PhoenixControls-4.9.x.xx\\\`. Must run Workbench as Administrator for upload to succeed.
 
 #### PORTAL — NIAGARA-BASED VISUALIZATION (MKT-0339)
 - Runs on the Tridium NiagaraAX/N4 JACE platform. All NiagaraAX JACE features are available.
@@ -571,7 +571,7 @@ Step-by-step, this is how it works:
 #### COMMON NIAGARA / PHOENIX CONTROLS INTEGRATION PROBLEMS & FIXES
 
 **Problem: Workbench can't connect to PBC platform**
-- Verify IP address (use `arp -a` in Windows CMD — wait 15s after PBC power-up for DHCP).
+- Verify IP address (use \`arp -a\` in Windows CMD — wait 15s after PBC power-up for DHCP).
 - Verify Fox protocol port 1911 is not blocked by firewall or VLAN.
 - Try pinging the PBC IP first — if ping fails, it's a network/IP issue, not Workbench.
 - Check that PBC has 24VAC power and is fully booted (LEDs stable).
@@ -602,7 +602,7 @@ Step-by-step, this is how it works:
 **Problem: Vision software upload fails**
 - Must run Workbench as Administrator before connecting to PCI.
 - Navigation file (.nav) must be transferred to station via File Transfer Client in Workbench.
-- Default nav file path: `C:\Niagara\PhoenixControls-4.9.x.xx\` (check installed version folder).
+- Default nav file path: \`C:\\Niagara\\PhoenixControls-4.9.x.xx\\\` (check installed version folder).
 
 #### KEY NIAGARA CONCEPTS EVERY PHOENIX TECH SHOULD KNOW
 - **Device Instance**: BACnet term for a device's unique network ID. Must be unique across the ENTIRE BACnet network (not just one subnet). Phoenix Controls calls this the "BACnet device instance." Duplicate = discovery failures.
@@ -630,7 +630,7 @@ Step-by-step, this is how it works:
 - Workbench 3.0+ = Niagara 4 support added (required for CSCP — PBC, FHD500, ACM)
 - Workbench 2.5+ = Minimum for PCI8000 commissioning
 - Always run the latest Phoenix Controls Workbench version available for your SMA level
-- Installation path: `C:\Niagara\PhoenixControls-4.x.x.xx\` — version number in folder name
+- Installation path: \`C:\\Niagara\\PhoenixControls-4.x.x.xx\\\` — version number in folder name
 
 ---
 
@@ -766,7 +766,7 @@ Px (Presentation XML) is Niagara's graphical view system — HTML5 in N4.
 - Configured through Phoenix Controls Workbench. Upload requires running Workbench as Administrator.
 - Provides floor plan views, valve health dashboards, alarm summaries, lab pressure status.
 - Add Vision to PCI8000: In Workbench Nav panel → upload existing station from PCI to localhost → right-click PCI → add Vision components → overwrite confirmation → deploy.
-- Nav file default location: `C:\Niagara\PhoenixControls-4.x.x.xx\`
+- Nav file default location: \`C:\\Niagara\\PhoenixControls-4.x.x.xx\\\`
 - Navigation hierarchy: Campus → Building → Floor → Room → Valve/Hood
 
 **Building custom Px graphics for CSCP systems:**
@@ -781,7 +781,7 @@ Px (Presentation XML) is Niagara's graphical view system — HTML5 in N4.
 - Link Px pages: hyperlink between floor plan view → room detail view → individual valve detail.
 - Save Px file to station via File → Save to Station.
 
-**N4 HTML5 web UI:** In N4, Px pages are served as HTML5 — no Java plugin required. Users access via browser at `https://[JACE-IP]/ord?[page-ord]`. Accessible from any device on the building network.
+**N4 HTML5 web UI:** In N4, Px pages are served as HTML5 — no Java plugin required. Users access via browser at \`https://[JACE-IP]/ord?[page-ord]\`. Accessible from any device on the building network.
 
 ---
 
@@ -861,7 +861,7 @@ NOTE: USB backup NOT supported if JACE 8000 was converted from NiagaraAX to N4 �
 5. Add Phoenix Controls Room Manager View (RoomManagerView) for each room.
 6. Configure alarm extensions: right-click each valve point → add alarm for each alarm type (flow, pressure, jam, FV).
 7. Add history extensions: Config → Services → History Service → History Extension Manager.
-8. Upload Vision nav file from `C:\Niagara\PhoenixControls-4.x.x.xx\` to station via File Transfer Client.
+8. Upload Vision nav file from \`C:\\Niagara\\PhoenixControls-4.x.x.xx\\\` to station via File Transfer Client.
 9. Run Workbench as Administrator — most upload failures are permission issues.
 
 ### ══════════════════════════════════════
@@ -1058,18 +1058,18 @@ This section is CRITICAL for legacy board replacement work. Getting jumpers/conf
 **Critical insight**: The X30 series does NOT use traditional PCB jumpers for configuration. All mode selection is done through **Calibration Parameter 1 (FHM Mode)** in software. This is the equivalent of what jumpers do on older boards — it tells the board what type of hood/valve it is controlling.
 
 **Parameter 1 — FHM Mode (MUST be set first, before all other parameters):**
-- `vAvv` — Standard VAV valve (EXV with variable airflow, sash sensor required)
-- `vAvd` — VAV drive hood (drive application, e.g. variable speed drive)
-- `cvn` — Constant volume, no sash input (CV valve, no sash sensor wired)
-- `cvA` — Constant volume with sash alarm (CV valve + sash switch for alarm only)
-- `cvS` — Constant volume with setback (CV valve + ZPS for occupancy setback)
-- `cvSA` — Constant volume with setback and sash alarm
-- `2St` — Two-state (PEV or BEV solenoid valve, FHM530 only)
-- `2StS` — Two-state with ZPS setback (FHM530 only)
-- `2StA` — Two-state with sash alarm (FHM530 only)
-- Default from factory: `vAvd` (FHM631), `0004`/CFM units (FHM430)
+- \`vAvv\` — Standard VAV valve (EXV with variable airflow, sash sensor required)
+- \`vAvd\` — VAV drive hood (drive application, e.g. variable speed drive)
+- \`cvn\` — Constant volume, no sash input (CV valve, no sash sensor wired)
+- \`cvA\` — Constant volume with sash alarm (CV valve + sash switch for alarm only)
+- \`cvS\` — Constant volume with setback (CV valve + ZPS for occupancy setback)
+- \`cvSA\` — Constant volume with setback and sash alarm
+- \`2St\` — Two-state (PEV or BEV solenoid valve, FHM530 only)
+- \`2StS\` — Two-state with ZPS setback (FHM530 only)
+- \`2StA\` — Two-state with sash alarm (FHM530 only)
+- Default from factory: \`vAvd\` (FHM631), \`0004\`/CFM units (FHM430)
 
-**Why this matters on board replacement**: A replacement FHM631 board ships from the factory in a default mode. If your application is `cvn` (constant volume, no sash) and the board is in `vAvv` (VAV), the board will immediately throw a flow alarm and sash sensor fault because it's looking for a sash signal that doesn't exist. Calibration will appear to complete but the system will not function.
+**Why this matters on board replacement**: A replacement FHM631 board ships from the factory in a default mode. If your application is \`cvn\` (constant volume, no sash) and the board is in \`vAvv\` (VAV), the board will immediately throw a flow alarm and sash sensor fault because it's looking for a sash signal that doesn't exist. Calibration will appear to complete but the system will not function.
 
 **Board-level hardware on X30 FHMs:**
 - **Power Loss Alarm (PLA) option**: Separate PLA module clips onto board. PLA has sealed lead-acid battery. Battery recharges in 8 hours, powers alarm for 24 hours, 5-year expected service life. Test button on PLA enclosure — hold 4+ seconds to test. PLA must be powered from same ±15VDC as the monitor. NOT available for 24VAC powered monitors.
@@ -1220,7 +1220,7 @@ The Niagara 4 station database is a hierarchical object model. Everything lives 
 - **Sys** — system-level properties, modules, platform info
 
 **Phoenix Controls station folder hierarchy (recommended):**
-```
+\`\`\`
 Station
 └── Config
     └── Drivers
@@ -1236,7 +1236,7 @@ Station
                         ├── Flow_Alarm        (BooleanPoint proxy)
                         ├── Pressure_Alarm    (BooleanPoint proxy)
                         └── Hood_1_FV         (NumericPoint proxy)
-```
+\`\`\`
 
 ---
 
@@ -1251,7 +1251,7 @@ Station
 
 **Phase 2 — Install Phoenix Controls Modules**
 1. In Workbench: Platform > Software Manager.
-2. Verify Phoenix Controls modules are installed: `phoenixControls-rt.jar`, `phoenixControls-wb.jar`, `phoenixControls-ux.jar`.
+2. Verify Phoenix Controls modules are installed: \`phoenixControls-rt.jar\`, \`phoenixControls-wb.jar\`, \`phoenixControls-ux.jar\`.
 3. If missing: drag from PC palette to JACE Software Manager > Install > Restart station.
 4. After restart, Phoenix Controls palette appears in Palette sidebar.
 
@@ -1354,53 +1354,53 @@ Critical step — controls whether points go stale:
 - Links are directional — data flows from output to input.
 
 **Essential Palettes for Phoenix Controls Logic:**
-- `kitControl` — math, logic, HVAC, timers, selectors, PID
-- `bacnet` — BACnet proxy points, device objects
-- `schedule` — WeeklySchedule, CalendarSchedule, SpecialEvent
-- `alarm` — AlarmExt, alarm classes, routing
-- `history` — HistoryExt, trend logging
-- `control` — NumericWritable, BooleanWritable, StringWritable point types
+- \`kitControl\` — math, logic, HVAC, timers, selectors, PID
+- \`bacnet\` — BACnet proxy points, device objects
+- \`schedule\` — WeeklySchedule, CalendarSchedule, SpecialEvent
+- \`alarm\` — AlarmExt, alarm classes, routing
+- \`history\` — HistoryExt, trend logging
+- \`control\` — NumericWritable, BooleanWritable, StringWritable point types
 
 **kitControl Component Reference for Phoenix Controls Programming:**
 
 **Math Components** (drag from kitControl > Math):
-- `Add` — sum two or more numeric inputs. Use: Supply + Offset = Exhaust setpoint calculation check
-- `Subtract` — A minus B. Use: Exhaust_Actual minus Supply_Actual = actual offset
-- `Multiply` — A × B. Use: Sash_Width × Sash_Height × FV_Setpoint = Hood_CFM_command
-- `Divide` — A ÷ B. Use: Hood_CFM ÷ Sash_Area = FV calculation
-- `Max` — highest of multiple inputs. Use: high-signal-select between thermal demand and pressurization (mirrors MIJ logic)
-- `Min` — lowest of inputs. Use: enforce minimum flow clamp
-- `Clamp` — forces output between min and max limits. Use: flow command clamped to physical valve limits
-- `Abs` — absolute value. Use: offset deviation alarm logic
-- `LinearInterpolation` — maps input range to output range. Use: sash position → CFM conversion
+- \`Add\` — sum two or more numeric inputs. Use: Supply + Offset = Exhaust setpoint calculation check
+- \`Subtract\` — A minus B. Use: Exhaust_Actual minus Supply_Actual = actual offset
+- \`Multiply\` — A × B. Use: Sash_Width × Sash_Height × FV_Setpoint = Hood_CFM_command
+- \`Divide\` — A ÷ B. Use: Hood_CFM ÷ Sash_Area = FV calculation
+- \`Max\` — highest of multiple inputs. Use: high-signal-select between thermal demand and pressurization (mirrors MIJ logic)
+- \`Min\` — lowest of inputs. Use: enforce minimum flow clamp
+- \`Clamp\` — forces output between min and max limits. Use: flow command clamped to physical valve limits
+- \`Abs\` — absolute value. Use: offset deviation alarm logic
+- \`LinearInterpolation\` — maps input range to output range. Use: sash position → CFM conversion
 
 **Logic Components** (kitControl > Logic — all produce StatusBoolean output):
-- `And` — all inputs must be TRUE. Use: (Fan Running AND Pressure OK AND No Emergency) = normal operation
-- `Or` — any input TRUE. Use: (Flow_Alarm OR Pressure_Alarm) = zone fault indicator
-- `Not` — inverts boolean. Use: Alarm_Active NOT = Normal_Status
-- `Latch` — set/reset latch. Use: emergency exhaust latch — set by trigger, reset by manual reset
-- `GreaterThan` — numeric comparison → boolean. Use: FV_Actual > FV_Alarm_Setpoint = alarm condition
-- `LessThan` — Use: FV_Actual < FV_Low_Setpoint = low FV alarm
-- `InRange` — output true if value within min/max. Use: CFM within acceptable band = no alarm
+- \`And\` — all inputs must be TRUE. Use: (Fan Running AND Pressure OK AND No Emergency) = normal operation
+- \`Or\` — any input TRUE. Use: (Flow_Alarm OR Pressure_Alarm) = zone fault indicator
+- \`Not\` — inverts boolean. Use: Alarm_Active NOT = Normal_Status
+- \`Latch\` — set/reset latch. Use: emergency exhaust latch — set by trigger, reset by manual reset
+- \`GreaterThan\` — numeric comparison → boolean. Use: FV_Actual > FV_Alarm_Setpoint = alarm condition
+- \`LessThan\` — Use: FV_Actual < FV_Low_Setpoint = low FV alarm
+- \`InRange\` — output true if value within min/max. Use: CFM within acceptable band = no alarm
 
 **HVAC Components** (kitControl > HVAC):
-- `Tstat` — thermostat with deadband. Use: lab temperature control, setpoint + deadband → heating/cooling enable
-- `LoopPoint` — PID loop controller. Use: temperature reset of supply air setpoint, pressure reset
+- \`Tstat\` — thermostat with deadband. Use: lab temperature control, setpoint + deadband → heating/cooling enable
+- \`LoopPoint\` — PID loop controller. Use: temperature reset of supply air setpoint, pressure reset
   - Controlled Variable: actual measurement (e.g. room temp)
   - Setpoint: desired value (e.g. 70°F)
   - Output: control signal (0–100%) → link to valve or actuator command
   - Tuning: Kp (proportional gain), Ki (integral), Kd (derivative) — start with Kp=1.0, Ki=0.01, Kd=0
-- `SequenceOfOperation` — sequences multiple outputs. Use: sequential HVAC equipment staging
-- `InterStartDelay` — delays between equipment starts. Use: prevents simultaneous AHU + exhaust fan start
+- \`SequenceOfOperation\` — sequences multiple outputs. Use: sequential HVAC equipment staging
+- \`InterStartDelay\` — delays between equipment starts. Use: prevents simultaneous AHU + exhaust fan start
 
 **Timer Components** (kitControl > Timer):
-- `BooleanDelay` — delays true/false transition. Use: alarm delay (don't alarm until condition persists 30s)
-- `OneShot` — pulse output on trigger. Use: momentary reset signal on emergency clear
-- `NumericDelay` — delays numeric value change. Use: ramp rate limiting on setpoint changes
+- \`BooleanDelay\` — delays true/false transition. Use: alarm delay (don't alarm until condition persists 30s)
+- \`OneShot\` — pulse output on trigger. Use: momentary reset signal on emergency clear
+- \`NumericDelay\` — delays numeric value change. Use: ramp rate limiting on setpoint changes
 
 **Selector Components** (kitControl > Selects):
-- `NumericSwitch` — select between numeric inputs based on boolean. Use: occupied vs unoccupied setpoint selection
-- `BooleanSwitch` — boolean version. Use: active schedule mode selection
+- \`NumericSwitch\` — select between numeric inputs based on boolean. Use: occupied vs unoccupied setpoint selection
+- \`BooleanSwitch\` — boolean version. Use: active schedule mode selection
 
 **Program Component** (program palette):
 - Custom Java-based logic when kitControl doesn't cover the need
@@ -1415,7 +1415,7 @@ Critical step — controls whether points go stale:
 
 **Sequence 1: Volumetric Offset Monitoring Wire Sheet**
 Purpose: Monitor that exhaust = supply + offset, alarm if deviation exceeds threshold.
-```
+\`\`\`
 Components needed:
 - Zone_Exhaust_CFM (NumericPoint proxy)
 - Zone_Supply_CFM (NumericPoint proxy)
@@ -1426,32 +1426,32 @@ Components needed:
 - GreaterThan → A: Offset_Deviation_Absolute, B: 50 (CFM tolerance) → output: Offset_Alarm
 - BooleanDelay → input: Offset_Alarm, delay: 30s → output: Offset_Alarm_Delayed
 - AlarmExt → on Offset_Alarm_Delayed BooleanPoint
-```
+\`\`\`
 
 **Sequence 2: Occupied/Unoccupied with Override Wire Sheet**
 Purpose: Schedule-based occupancy with manual override capability.
-```
+\`\`\`
 Components needed:
 - WeeklySchedule → output: Schedule_Occupied (boolean)
 - Occupied_Override (BooleanWritable — priority 8, operator writable)
 - Or → inputs: Schedule_Occupied, Occupied_Override → output: Occupied_Command
 - Link Occupied_Command → PBC Occupied_Cmd BooleanWritable proxy (in1 slot, priority 10)
-```
+\`\`\`
 Note: Niagara priority array — lower number = higher priority. Schedule writes at priority 13, override at 8.
 
 **Sequence 3: High-Signal-Select (mirrors MIJ thermal demand logic)**
 Purpose: Supply valve takes highest of thermal demand or pressurization requirement.
-```
+\`\`\`
 Components needed:
 - Pressurization_CFM_Required (NumericPoint — from zone offset calculation)
 - Thermal_CFM_Required (NumericPoint — from temperature control loop output)
 - Max → inputs: Pressurization_CFM, Thermal_CFM → output: Supply_CFM_Command
 - Link Supply_CFM_Command → PBC Supply Setpoint NumericWritable proxy
-```
+\`\`\`
 
 **Sequence 4: Emergency Exhaust Latch with Reset**
 Purpose: Emergency trigger latches all exhaust to max; manual reset required.
-```
+\`\`\`
 Components needed:
 - Emergency_Trigger (BooleanPoint — from fire alarm, gas detector, or manual button)
 - Manual_Reset (BooleanWritable — operator-level reset point)
@@ -1459,11 +1459,11 @@ Components needed:
 - Link Emergency_Active → PBC Emergency_Exhaust BooleanWritable proxy (priority 3 — high)
 - HistoryExt on Emergency_Active — record all emergency events
 - AlarmExt on Emergency_Trigger — immediate routing to safety officer
-```
+\`\`\`
 
 **Sequence 5: Cascading Room Pressurization (Healthcare)**
 Purpose: Maintain pressure cascade across AII room → anteroom → corridor.
-```
+\`\`\`
 Room hierarchy: Corridor (+) > Anteroom (++) > AII Room (−)
 Components needed (per room boundary):
 - Room1_Exhaust_CFM, Room2_Supply_CFM (proxy points)
@@ -1472,11 +1472,11 @@ Components needed (per room boundary):
 - Subtract → Actual_Offset - DesiredOffset → Offset_Error
 - LoopPoint (PI only, no derivative for airflow) → controlled var: Offset_Error, setpoint: 0
   → output: Trim_Signal → linked to supply valve setpoint adjustment
-```
+\`\`\`
 
 **Sequence 6: PID Temperature Reset of Exhaust Setpoint**
 Purpose: Increase lab exhaust when room temperature rises (thermal override).
-```
+\`\`\`
 Components needed:
 - Room_Temp (NumericPoint proxy — room temp sensor)
 - Temp_Setpoint (NumericWritable — 70°F default)
@@ -1490,7 +1490,7 @@ Components needed:
   - Out Max: Max_CFM (e.g. 1500 CFM)
   - Output: Thermal_CFM_Demand
 - Max → inputs: Pressurization_CFM, Thermal_CFM_Demand → Supply_Command
-```
+\`\`\`
 
 ---
 
@@ -1686,7 +1686,7 @@ Phoenix Controls valve model strings encode all key specifications. Structure va
 Every Niagara 4 station follows a consistent hierarchy. Understanding this is prerequisite to programming Phoenix Controls systems in N4:
 
 **Station Nav Tree Structure:**
-```
+\`\`\`
 Config/
   ├── Drivers/
   │   ├── BacnetNetwork/          ← All BACnet comms live here
@@ -1705,7 +1705,7 @@ Config/
   │   ├── ScheduleService
   │   └── UserService
   └── [Logic Folders]/            ← Your control wiresheet logic
-```
+\`\`\`
 
 **Key rule**: The Drivers container handles ALL communication with field devices. Your control logic lives OUTSIDE drivers — in separate folders — and reads/writes to proxy points via links.
 
@@ -1726,7 +1726,7 @@ Config/
 | EnumWritable | Multi-state Output/Value (MSV) | Occupied command |
 
 **CRITICAL — Writable proxy points are disabled by default:**
-When you add a writable proxy point (NumericWritable, BooleanWritable) for a commandable BACnet object (one with a Priority_Array), Niagara sets `Enabled = false` by default. This is a safety feature to prevent unintentional writes. You MUST manually set `Enabled = true` before the point will read OR write. Navigate to the proxy point → Property Sheet → set Enabled to true.
+When you add a writable proxy point (NumericWritable, BooleanWritable) for a commandable BACnet object (one with a Priority_Array), Niagara sets \`Enabled = false\` by default. This is a safety feature to prevent unintentional writes. You MUST manually set \`Enabled = true\` before the point will read OR write. Navigate to the proxy point → Property Sheet → set Enabled to true.
 
 **BACnet Priority Levels in Niagara writable points:**
 Niagara writable proxy points have 16 priority slots (In1–In16) mapping directly to BACnet priority levels 1–16:
@@ -1744,14 +1744,14 @@ Niagara writable proxy points have 16 priority slots (In1–In16) mapping direct
 3. PBCs appear as discovered devices. Right-click device → Add to Database
 4. Navigate into device → points → right-click → Discover Points (or New → point type)
 5. Key Phoenix PBC points to add:
-   - `Zone_Exhaust_CFM` (NumericPoint) — actual zone exhaust
-   - `Zone_Supply_CFM` (NumericPoint) — actual zone supply
-   - `Zone_Offset_CFM` (NumericWritable, Enabled=true) — volumetric offset setpoint
-   - `Occupied_Command` (BooleanWritable or EnumWritable, Enabled=true) — occupancy
-   - `Emergency_Exhaust` (BooleanWritable, Enabled=true) — emergency override
-   - `Zone_Flow_Alarm` (BooleanPoint) — flow alarm status
-   - `FV_Low_Alarm` (BooleanPoint) — face velocity alarm
-   - `Zone_Temperature` (NumericPoint) — space temp if sensor present
+   - \`Zone_Exhaust_CFM\` (NumericPoint) — actual zone exhaust
+   - \`Zone_Supply_CFM\` (NumericPoint) — actual zone supply
+   - \`Zone_Offset_CFM\` (NumericWritable, Enabled=true) — volumetric offset setpoint
+   - \`Occupied_Command\` (BooleanWritable or EnumWritable, Enabled=true) — occupancy
+   - \`Emergency_Exhaust\` (BooleanWritable, Enabled=true) — emergency override
+   - \`Zone_Flow_Alarm\` (BooleanPoint) — flow alarm status
+   - \`FV_Low_Alarm\` (BooleanPoint) — face velocity alarm
+   - \`Zone_Temperature\` (NumericPoint) — space temp if sensor present
 6. Right-click points container → Add → select point type → configure Object ID and Object Type to match PBC BACnet object
 
 **Adding proxy points to multiple PBCs at once:**
@@ -1770,22 +1770,22 @@ Use the BACnet Point Manager view (right-click BacnetNetwork → Views → Point
 
 | Policy Name | Bucket | COV | Use for |
 |---|---|---|---|
-| `PhoenixSafety` | Fast (1s) | Yes | Flow alarms, FV alarms, emergency status |
-| `PhoenixControl` | Fast (5s) | Yes | Exhaust CFM actual, supply CFM actual |
-| `PhoenixMonitor` | Normal (30s) | No | Temperature, humidity, setpoint readbacks |
-| `PhoenixEnergy` | Slow (5min) | No | Energy totals, valve position, non-critical |
+| \`PhoenixSafety\` | Fast (1s) | Yes | Flow alarms, FV alarms, emergency status |
+| \`PhoenixControl\` | Fast (5s) | Yes | Exhaust CFM actual, supply CFM actual |
+| \`PhoenixMonitor\` | Normal (30s) | No | Temperature, humidity, setpoint readbacks |
+| \`PhoenixEnergy\` | Slow (5min) | No | Energy totals, valve position, non-critical |
 
 **COV (Change of Value) subscriptions** — always use COV for Phoenix alarm points. COV means the device sends an update only when the value changes, reducing poll overhead significantly. Configure COV lifetime to not exceed 28,800 seconds (8 hours — N4 BACnet driver requirement).
 
 **Poll scheduler health**: Keep poll scheduler below 75% busy. Check: Config → Drivers → BacnetNetwork → Poll Scheduler → Statistics view. Above 75% = tune your policies. Above 90% = emergency — you'll get stale points and missed alarms.
 
 **Stale points troubleshooting:**
-A proxy point goes `{stale}` when Niagara cannot communicate with the device. Status levels:
-- `{ok}` — Good. Communicating normally.
-- `{stale}` — Device not responding to polls. Check: network connectivity, device power, BACnet device instance duplicates, IP address changed (DHCP scope change).
-- `{disabled}` — Point disabled in Niagara (Enabled=false). Enable it.
-- `{down}` — Device marked down. Station gave up trying. Check physical connection, then: right-click device → Actions → Enable (or ping test first).
-- `{fault}` — Configuration error. Wrong object type or ID for this device.
+A proxy point goes \`{stale}\` when Niagara cannot communicate with the device. Status levels:
+- \`{ok}\` — Good. Communicating normally.
+- \`{stale}\` — Device not responding to polls. Check: network connectivity, device power, BACnet device instance duplicates, IP address changed (DHCP scope change).
+- \`{disabled}\` — Point disabled in Niagara (Enabled=false). Enable it.
+- \`{down}\` — Device marked down. Station gave up trying. Check physical connection, then: right-click device → Actions → Enable (or ping test first).
+- \`{fault}\` — Configuration error. Wrong object type or ID for this device.
 
 **Force update a stale point**: Right-click proxy point → Actions → Force Update (immediately re-polls the device). Useful to confirm a device is back online after fixing a connection issue.
 
@@ -1805,38 +1805,38 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 **kitControl palette** — The core HVAC logic toolkit:
 | Component | Function | Phoenix Controls Use |
 |---|---|---|
-| `Add` | Sums two or more inputs | Add supply CFM + offset = required exhaust |
-| `Subtract` | A minus B | Calculate current vs setpoint delta |
-| `Min` / `Max` | Returns min or max of inputs | Enforce minimum exhaust flow clamp |
-| `And` / `Or` / `Not` | Boolean logic | Combine alarm conditions |
-| `GreaterThan` / `LessThan` | Numeric comparison | Check if FV is below setpoint |
-| `Switch` | Conditional output (if/else) | Select between occupied/unoccupied setpoints |
-| `NumericSwitch` | Selects between numeric inputs | Select setback vs normal flow |
-| `Ramp` | Smooth rate-of-change limiting | Prevent sudden CFM steps in supply |
-| `Timer` | On/off delay | Alarm delay before alarming on FV |
-| `Counter` | Count pulses/transitions | Count emergency events |
-| `PIDController` | Proportional-Integral-Derivative loop | Temperature control linked to supply valve |
-| `HighSignalSelect` | Returns highest of N inputs | MIJ-equivalent high-signal-select for supply valve (thermal demand vs pressurization) |
-| `LowSignalSelect` | Returns lowest of N inputs | Clamp minimum flow |
-| `NightPurge` | Night setback logic | Unoccupied mode ventilation reduction |
-| `Sequencer` | Stage-based output | Multi-stage heating/cooling sequences |
-| `IntervalTimer` | Periodic execution | Timed overrides |
-| `LeadLag` | Alternating equipment rotation | Dual exhaust fan lead-lag |
+| \`Add\` | Sums two or more inputs | Add supply CFM + offset = required exhaust |
+| \`Subtract\` | A minus B | Calculate current vs setpoint delta |
+| \`Min\` / \`Max\` | Returns min or max of inputs | Enforce minimum exhaust flow clamp |
+| \`And\` / \`Or\` / \`Not\` | Boolean logic | Combine alarm conditions |
+| \`GreaterThan\` / \`LessThan\` | Numeric comparison | Check if FV is below setpoint |
+| \`Switch\` | Conditional output (if/else) | Select between occupied/unoccupied setpoints |
+| \`NumericSwitch\` | Selects between numeric inputs | Select setback vs normal flow |
+| \`Ramp\` | Smooth rate-of-change limiting | Prevent sudden CFM steps in supply |
+| \`Timer\` | On/off delay | Alarm delay before alarming on FV |
+| \`Counter\` | Count pulses/transitions | Count emergency events |
+| \`PIDController\` | Proportional-Integral-Derivative loop | Temperature control linked to supply valve |
+| \`HighSignalSelect\` | Returns highest of N inputs | MIJ-equivalent high-signal-select for supply valve (thermal demand vs pressurization) |
+| \`LowSignalSelect\` | Returns lowest of N inputs | Clamp minimum flow |
+| \`NightPurge\` | Night setback logic | Unoccupied mode ventilation reduction |
+| \`Sequencer\` | Stage-based output | Multi-stage heating/cooling sequences |
+| \`IntervalTimer\` | Periodic execution | Timed overrides |
+| \`LeadLag\` | Alternating equipment rotation | Dual exhaust fan lead-lag |
 
 **control palette** — Niagara built-in point types for local logic:
 | Component | Use |
 |---|---|
-| `NumericWritable` | Local numeric setpoint or intermediate calculation result |
-| `BooleanWritable` | Local boolean command point |
-| `EnumWritable` | Local multi-state (e.g. Occupied/Unoccupied/Standby) |
-| `StringWritable` | Local text value |
+| \`NumericWritable\` | Local numeric setpoint or intermediate calculation result |
+| \`BooleanWritable\` | Local boolean command point |
+| \`EnumWritable\` | Local multi-state (e.g. Occupied/Unoccupied/Standby) |
+| \`StringWritable\` | Local text value |
 
 **schedule palette:**
 | Component | Use |
 |---|---|
-| `WeeklySchedule` | 7-day occupancy schedule → output links to Occupied_Command proxy |
-| `CalendarSchedule` | Holiday/special day exceptions |
-| `SpecialEvent` | Override schedule for specific dates |
+| \`WeeklySchedule\` | 7-day occupancy schedule → output links to Occupied_Command proxy |
+| \`CalendarSchedule\` | Holiday/special day exceptions |
+| \`SpecialEvent\` | Override schedule for specific dates |
 
 ---
 
@@ -1846,26 +1846,26 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 
 **Step 1 — Create the schedule:**
 1. Right-click your zone logic folder → New → From Palette → schedule → WeeklySchedule
-2. Name it `Occ_Schedule_Lab201`
+2. Name it \`Occ_Schedule_Lab201\`
 3. Double-click to open → configure Monday–Friday 7AM–7PM as Occupied (true), all other times Unoccupied (false)
 4. Add holiday calendar: right-click schedule → New → CalendarSchedule → add holiday dates
 
 **Step 2 — Add proxy points:**
-- `Occ_Command_Write` — BooleanWritable proxy to PBC Occupied_Command BACnet object (Enabled=true, Priority=In8)
-- `Occ_Status_Read` — BooleanPoint proxy to PBC Occupied_Status BACnet object
+- \`Occ_Command_Write\` — BooleanWritable proxy to PBC Occupied_Command BACnet object (Enabled=true, Priority=In8)
+- \`Occ_Status_Read\` — BooleanPoint proxy to PBC Occupied_Status BACnet object
 
 **Step 3 — Wire the logic:**
 1. Open zone folder wire sheet
-2. Drag `WeeklySchedule` onto the sheet (or link from the schedule you created)
-3. Drag `Occ_Command_Write` proxy onto the sheet
-4. Draw a link from WeeklySchedule `Out` → `Occ_Command_Write` `In8` slot
+2. Drag \`WeeklySchedule\` onto the sheet (or link from the schedule you created)
+3. Drag \`Occ_Command_Write\` proxy onto the sheet
+4. Draw a link from WeeklySchedule \`Out\` → \`Occ_Command_Write\` \`In8\` slot
 5. The schedule output (true/false) now writes to the PBC at BACnet priority 8
 
 **Step 4 — Verify:**
-- Check `Occ_Status_Read` — should reflect PBC's confirmed occupied state
+- Check \`Occ_Status_Read\` — should reflect PBC's confirmed occupied state
 - Check FHD500 display — should show setback FV when unoccupied
 
-**Common mistake:** Linking schedule output to `In16` (lowest priority) means a manual override at the PBC or FHD500 at priority 8 or higher will always win — which is usually correct behavior.
+**Common mistake:** Linking schedule output to \`In16\` (lowest priority) means a manual override at the PBC or FHD500 at priority 8 or higher will always win — which is usually correct behavior.
 
 ---
 
@@ -1874,18 +1874,18 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 **Goal:** Allow BMS operator to trigger emergency exhaust override on all Phoenix PBC zones from Niagara.
 
 **Step 1 — Add emergency proxy points to each PBC:**
-- `Emergency_Exhaust_Write` — BooleanWritable proxy to PBC Emergency_Exhaust BACnet object (Enabled=true, Priority=In1)
+- \`Emergency_Exhaust_Write\` — BooleanWritable proxy to PBC Emergency_Exhaust BACnet object (Enabled=true, Priority=In1)
 
 **Step 2 — Create a global emergency point:**
-- In a Global folder, create a local `BooleanWritable` named `Global_Emergency_Exhaust`
+- In a Global folder, create a local \`BooleanWritable\` named \`Global_Emergency_Exhaust\`
 - This is what the operator writes to
 
 **Step 3 — Wire to all zones:**
-- Link `Global_Emergency_Exhaust` Out → `Emergency_Exhaust_Write` In1 on each PBC device
+- Link \`Global_Emergency_Exhaust\` Out → \`Emergency_Exhaust_Write\` In1 on each PBC device
 - For 20+ PBCs: use N4 Point Manager to batch-wire
 
 **Step 4 — Add alarm extension:**
-- Right-click `Global_Emergency_Exhaust` → Extensions → Add Extension → AlarmExt
+- Right-click \`Global_Emergency_Exhaust\` → Extensions → Add Extension → AlarmExt
 - Configure to trigger when true, route to LabSafety alarm class
 
 **Priority note:** Writing emergency exhaust at In1 (BACnet priority 1) means it overrides everything including local FHD500 overrides. Only a physical power cycle or direct BACnet write at priority 1 from another source can override it.
@@ -1899,12 +1899,12 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 **This is the core Phoenix Controls supply valve control logic.** The supply valve should be at whichever is larger: the volume needed to maintain room temperature, or the volume needed to maintain pressurization offset.
 
 **Wire sheet setup:**
-1. Create `Thermal_Demand_CFM` — NumericPoint proxy (room temperature PID output, in CFM)
-2. Create `Press_Required_CFM` — NumericPoint (exhaust CFM minus desired offset)
-3. From kitControl palette: drag `HighSignalSelect` component
-4. Link `Thermal_Demand_CFM` → HighSignalSelect `In1`
-5. Link `Press_Required_CFM` → HighSignalSelect `In2`
-6. Link HighSignalSelect `Out` → `Supply_Setpoint_Write` proxy (NumericWritable to PBC supply command)
+1. Create \`Thermal_Demand_CFM\` — NumericPoint proxy (room temperature PID output, in CFM)
+2. Create \`Press_Required_CFM\` — NumericPoint (exhaust CFM minus desired offset)
+3. From kitControl palette: drag \`HighSignalSelect\` component
+4. Link \`Thermal_Demand_CFM\` → HighSignalSelect \`In1\`
+5. Link \`Press_Required_CFM\` → HighSignalSelect \`In2\`
+6. Link HighSignalSelect \`Out\` → \`Supply_Setpoint_Write\` proxy (NumericWritable to PBC supply command)
 
 **The math:**
 - Exhaust CFM (measured) = 800 CFM
@@ -1921,23 +1921,23 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 **Goal:** Control room temperature by modulating the Phoenix supply valve via the PBC.
 
 **kitControl PIDController setup:**
-1. Drag `PIDController` from kitControl palette onto wiresheet
+1. Drag \`PIDController\` from kitControl palette onto wiresheet
 2. Configure properties:
-   - `Setpoint` = room temperature setpoint (link from local NumericWritable or schedule)
-   - `Input` = room temperature proxy point (NumericPoint from BACnet sensor)
-   - `Action` = Direct (increase output when input rises above setpoint for cooling) or Reverse (for heating)
-   - `Kp` (Proportional Constant): Start with 2.0 for lab supply — tune from there
-   - `Ti` (Integral Time): Start with 300 seconds (5 minutes)
-   - `Td` (Derivative Time): Start at 0 — only add if hunting persists after integral tuning
-   - `Output Min` = minimum supply CFM (match PBC minimum flow setting)
-   - `Output Max` = maximum supply CFM (match PBC maximum flow setting)
-3. Link PID `Out` → HighSignalSelect `In1` (thermal demand input)
+   - \`Setpoint\` = room temperature setpoint (link from local NumericWritable or schedule)
+   - \`Input\` = room temperature proxy point (NumericPoint from BACnet sensor)
+   - \`Action\` = Direct (increase output when input rises above setpoint for cooling) or Reverse (for heating)
+   - \`Kp\` (Proportional Constant): Start with 2.0 for lab supply — tune from there
+   - \`Ti\` (Integral Time): Start with 300 seconds (5 minutes)
+   - \`Td\` (Derivative Time): Start at 0 — only add if hunting persists after integral tuning
+   - \`Output Min\` = minimum supply CFM (match PBC minimum flow setting)
+   - \`Output Max\` = maximum supply CFM (match PBC maximum flow setting)
+3. Link PID \`Out\` → HighSignalSelect \`In1\` (thermal demand input)
 4. PID output is now the thermal demand CFM that feeds the high-signal-select
 
 **PID tuning for Phoenix supply valves:**
 - Phoenix venturi valves respond in <1 second (high speed) — your PID is not limited by valve speed
 - Start conservative: Kp=1.5, Ti=600s (integral windup prevention is critical)
-- Enable anti-windup: set `Output Min` and `Output Max` to prevent integrator from running away when valve is at limits
+- Enable anti-windup: set \`Output Min\` and \`Output Max\` to prevent integrator from running away when valve is at limits
 - If room temperature oscillates: increase Ti (slow the integral down)
 - If response is sluggish: decrease Ti or increase Kp slightly
 - Labs typically don't need derivative action — thermal mass is large enough
@@ -1950,17 +1950,17 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 
 **Step 1 — Create Alarm Classes:**
 - Config → Services → AlarmService → AlarmClasses → New:
-  - `LabSafety` — for FV low, emergency exhaust, pressure alarms (high urgency)
-  - `HVACFault` — for flow alarms, jam alarms, communication alarms (maintenance queue)
-  - `EnergyAlert` — for sash open/energy waste (low priority, batched)
+  - \`LabSafety\` — for FV low, emergency exhaust, pressure alarms (high urgency)
+  - \`HVACFault\` — for flow alarms, jam alarms, communication alarms (maintenance queue)
+  - \`EnergyAlert\` — for sash open/energy waste (low priority, batched)
 
 **Step 2 — Add AlarmExt to each proxy point:**
 - Right-click proxy point → Extensions → Add Extension → AlarmExt
 - Configure:
-  - `Alarm Class` = select from above
-  - `To Offnormal Text` = descriptive message (e.g. "Lab 201 Hood 3 — Face Velocity Low")
-  - `To Normal Text` = clearance message
-  - `Offnormal Algorithm` = OutOfRangeAlarmAlgorithm for numeric, ChangeOfStateAlgorithm for boolean
+  - \`Alarm Class\` = select from above
+  - \`To Offnormal Text\` = descriptive message (e.g. "Lab 201 Hood 3 — Face Velocity Low")
+  - \`To Normal Text\` = clearance message
+  - \`Offnormal Algorithm\` = OutOfRangeAlarmAlgorithm for numeric, ChangeOfStateAlgorithm for boolean
   - For numeric (FV): set High Limit and/or Low Limit thresholds
   - For boolean (alarm bit): ChangeOfStateAlgorithm triggers when point goes true
 
@@ -1968,8 +1968,8 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 - AlarmService → AlarmClasses → LabSafety → Recipients → New:
   - EmailRecipient: SMTP server, to address, format
   - ConsoleRecipient: Niagara alarm console (always add this)
-- For LabSafety: send immediately (`Ack Required = true`, `Max Time = 0s`)
-- For HVACFault: batch hourly (`Max Time = 3600s`)
+- For LabSafety: send immediately (\`Ack Required = true\`, \`Max Time = 0s\`)
+- For HVACFault: batch hourly (\`Max Time = 3600s\`)
 
 **Step 4 — Test:**
 - Manually command an alarm condition (e.g. write FV setpoint above current reading)
@@ -1989,10 +1989,10 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 **Step 2 — Add HistoryExt to proxy points:**
 - Right-click proxy point → Extensions → Add Extension → HistoryExt
 - Configure:
-  - `History Id` = meaningful name (e.g. `Lab201_Exhaust_CFM`)
-  - `History Type` = Interval (time-based) or COV (change-triggered)
-  - `Interval` = for Interval type: 1s (safety), 30s (monitoring), 5min (energy)
-  - `Capacity` = number of records (10,080 = 1 week at 1-min intervals)
+  - \`History Id\` = meaningful name (e.g. \`Lab201_Exhaust_CFM\`)
+  - \`History Type\` = Interval (time-based) or COV (change-triggered)
+  - \`Interval\` = for Interval type: 1s (safety), 30s (monitoring), 5min (energy)
+  - \`Capacity\` = number of records (10,080 = 1 week at 1-min intervals)
 
 **Step 3 — View history:**
 - Right-click history → Chart History (visual trend)
@@ -2025,17 +2025,17 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 - Or draw room outlines using rectangle components from bajaui palette
 
 **Step 3 — Bind Phoenix points to visual elements:**
-- Drag a `NumericLabel` from kitPx palette onto canvas
+- Drag a \`NumericLabel\` from kitPx palette onto canvas
 - Right-click → Bind → navigate to proxy point → select
 - Configure units, decimal places, color thresholds
 
 **Step 4 — Add alarm indicators:**
-- Drag `StatusIndicator` or `Led` from kitPx palette
+- Drag \`StatusIndicator\` or \`Led\` from kitPx palette
 - Bind to a boolean alarm proxy point
 - Configure colors: green=normal, red=alarm
 
 **Step 5 — Add face velocity gauge:**
-- Drag `Gauge` from kitPx palette
+- Drag \`Gauge\` from kitPx palette
 - Bind to FV proxy point
 - Set min=0, max=200 fpm, warning zone=80-100, alarm zone=0-80
 
@@ -2045,7 +2045,7 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 
 **Step 7 — Deploy and test:**
 - File → Save to Station
-- Open browser at `https://[JACE-IP]/ord?station:|slot:/path/to/PxFile`
+- Open browser at \`https://[JACE-IP]/ord?station:|slot:/path/to/PxFile\`
 - Verify all bindings update live
 
 ---
@@ -2106,7 +2106,7 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 #### CONTROLS LOGIC REFERENCE — COMMON PHOENIX CONTROLS SEQUENCES IN N4
 
 **Volumetric Offset Control (N4 implementation):**
-```
+\`\`\`
 Exhaust_CFM_Actual (NumericPoint proxy)
     → HighSignalSelect.In1
     
@@ -2121,10 +2121,10 @@ Thermal_Demand_CFM (from PID)
     → HighSignalSelect.In1
 
 HighSignalSelect.Out → Supply_Command_Write (NumericWritable proxy, In16)
-```
+\`\`\`
 
 **Face Velocity Alarm Logic (N4 local check, supplemental to PBC):**
-```
+\`\`\`
 FV_Actual (NumericPoint proxy from FHD500)
     → LessThan.In1
     
@@ -2135,10 +2135,10 @@ LessThan.Out (boolean: true when FV < 100 fpm)
     → Timer.In (delay 30s before alarm — prevents nuisance alarms during sash movement)
 
 Timer.Out → AlarmExt (on FV_Low_Alarm_Local boolean point)
-```
+\`\`\`
 
 **Emergency Exhaust with Auto-Reset (N4 logic):**
-```
+\`\`\`
 Global_Emergency_Switch (BooleanWritable — operator input)
     → Or.In1
 
@@ -2147,10 +2147,10 @@ Fire_Alarm_Input (BooleanPoint proxy from fire panel BACnet)
 
 Or.Out → Emergency_Exhaust_Write (BooleanWritable proxy, In1)
 Or.Out → AlarmExt (emergency active alarm)
-```
+\`\`\`
 
 **Sash Energy Waste Alert (N4 supplemental logic):**
-```
+\`\`\`
 Sash_Open (BooleanPoint proxy — true if sash >6" open from FHD500)
     → And.In1
 
@@ -2159,13 +2159,13 @@ Room_Unoccupied (from schedule, inverted via Not)
 
 And.Out → Timer.In (delay 15min — ignore brief unoccupied moments)
 Timer.Out → EnergyWaste_Alarm (BooleanPoint with AlarmExt → EnergyAlert class)
-```
+\`\`\`
 
 ---
 
 #### N4 PROGRAMMING BEST PRACTICES FOR PHOENIX CONTROLS SYSTEMS
 
-1. **Name everything consistently.** Use format: `[Building]_[Floor]_[Room]_[Hood]_[PointType]`. Example: `BldgA_2_Lab201_Hood3_Exhaust_CFM`. N4 ORD paths are case-sensitive — be consistent.
+1. **Name everything consistently.** Use format: \`[Building]_[Floor]_[Room]_[Hood]_[PointType]\`. Example: \`BldgA_2_Lab201_Hood3_Exhaust_CFM\`. N4 ORD paths are case-sensitive — be consistent.
 
 2. **Never write to Phoenix PBC at priority 1 from scheduled logic.** Priority 1 is for emergencies only. Scheduled occupancy at priority 1 means operators can never override locally. Use priority 8 (operator) or 16 (auto/BAS).
 
@@ -2256,54 +2256,54 @@ The LoopPoint is Niagara's built-in PID controller. Used extensively in Phoenix 
 #### CONTROL SEQUENCES COMMONLY BUILT IN N4 FOR PHOENIX SYSTEMS
 
 **1. Occupied/Unoccupied Setback Control**
-```
+\`\`\`
 WeeklySchedule → BooleanPoint (OccupiedStatus)
 OccupiedStatus → IfElse → NumericWritable (FV_Setpoint)
   If True: 100 fpm (occupied setpoint)
   If False: 60 fpm (setback setpoint)
 FV_Setpoint → BACnet write → PBC Occupied_FV_SP proxy point
-```
+\`\`\`
 **Key consideration**: PBC must be configured to accept BACnet writes to its setpoint objects. Verify the PBC's BACnet object is writable (not read-only) before building this sequence.
 
 **2. Temperature-Based Supply Air Reset**
-```
+\`\`\`
 Zone_Temp_Sensor (proxy point) → LoopPoint (PI controller)
   SP = 72°F, Action = Reverse, P = 5°F, I = 180s
 LoopPoint.Out → LinearScale (0–100% → 55°F–65°F)
 LinearScale.Out → NumericWritable (SAT_Setpoint)
 SAT_Setpoint → BACnet write → AHU supply air temp controller
-```
+\`\`\`
 
 **3. Emergency Exhaust Override Logic**
-```
+\`\`\`
 BooleanPoint (EmergencyInput) — from fire alarm panel or manual switch
 EmergencyInput → BACnet write → PBC Emergency_Exhaust_Override proxy point
 Also trigger: AlarmExt on EmergencyInput → Alert maintenance immediately
-```
+\`\`\`
 
 **4. Multi-Zone Pressurization Monitoring**
-```
+\`\`\`
 PBC_Room_Offset (proxy point — actual CFM offset) → LoopPoint or direct comparison
 Compare actual offset vs design offset minimum
 If actual < minimum for >30 seconds → generate alarm
 Route alarm to LabSafety alarm class
-```
+\`\`\`
 
 **5. Reheat Coil Sequencing**
-```
+\`\`\`
 Zone_Temp (proxy) → LoopPoint (heating PI)
 LoopPoint.Out → Sequencer (splits 0–100% output across multiple stages)
 Sequencer Stage1 (0–33%) → Valve1_Command (BACnet write)
 Sequencer Stage2 (33–66%) → Valve2_Command (BACnet write)
 Sequencer Stage3 (66–100%) → Valve3_Command (BACnet write)
-```
+\`\`\`
 
 **6. Occupancy Cascade — ZPS to N4 to PBC**
-```
+\`\`\`
 ZPS physical signal → ACM UIO input → PBC Occupied_Status BACnet object
 PBC Occupied_Status (proxy point in N4) → BooleanPoint
 BooleanPoint → drives WeeklySchedule override OR directly wires to setback logic
-```
+\`\`\`
 
 ---
 
@@ -2330,7 +2330,7 @@ Every writable point in N4 has a 16-level Priority Array following BACnet standa
 **The Program Component (program palette):**
 Allows custom Java logic without creating a new JAR module. Drag onto Wire Sheet → add slots (inputs/outputs) → write Java in the Source tab.
 - Useful for complex Phoenix custom sequences not achievable with kitControl alone.
-- Add an `executeOnChange` flag to an input slot to trigger the program when that value changes.
+- Add an \`executeOnChange\` flag to an input slot to trigger the program when that value changes.
 - Example use: Custom face velocity alarm logic that considers both sash position AND occupancy before generating an alarm.
 
 **Composites:**
@@ -2347,7 +2347,7 @@ Allows custom Java logic without creating a new JAR module. Drag onto Wire Sheet
 Stale = the JACE has lost communication with the device and the last known value is being displayed with a {stale} status flag.
 
 Step-by-step diagnosis:
-1. **Ping the PBC** from the JACE's platform terminal (Tools → Platform → Terminal → `ping [PBC IP]`). If ping fails → IP routing issue, VLAN problem, or PBC IP changed (DHCP reassignment).
+1. **Ping the PBC** from the JACE's platform terminal (Tools → Platform → Terminal → \`ping [PBC IP]\`). If ping fails → IP routing issue, VLAN problem, or PBC IP changed (DHCP reassignment).
 2. **Check BACnet Device** in Nav tree → right-click device → Actions → Ping. If this fails but IP ping works → BACnet communication issue (wrong device instance, firewall blocking UDP 47808).
 3. **Check Tuning Policy Stale Time**: Nav tree → Drivers → BacnetNetwork → [Device] → Points folder → right-click any proxy point → Property Sheet → look at the Tuning Policy applied. Verify the Stale Time is appropriate (not 0 seconds, which means immediate stale on any poll miss).
 4. **Force Read**: Right-click proxy point → Actions → Force Read. If value appears after Force Read but goes stale again → poll scheduler issue or COV subscription not renewing.
@@ -2390,11 +2390,11 @@ Fault = device is communicating but returning an error on this specific point.
 3. Check JACE platform is running: connect to Platform first (port 3011) before attempting station connection.
 4. SSL certificate mismatch: If certificate expired or not trusted → Workbench → Certificate Manager → approve the JACE's certificate.
 5. System Passphrase: Required if the JACE has been secured with a passphrase. Cannot connect without it — if lost, JACE requires factory reset.
-6. Try connecting via IP directly (File → Open → `ip:[JACE-IP]|fox:`) rather than through a Niagara network topology.
+6. Try connecting via IP directly (File → Open → \`ip:[JACE-IP]|fox:\`) rather than through a Niagara network topology.
 7. Verify Workbench version is compatible with JACE firmware version. JACE 9000 requires N4.13+ — older Workbench versions cannot connect to JACE 9000.
 
 **PROBLEM: Phoenix Controls Workbench can't discover PBCs**
-1. Verify PBC is powered and IP address is obtainable (`arp -a` on Windows ~15s after power-up).
+1. Verify PBC is powered and IP address is obtainable (\`arp -a\` on Windows ~15s after power-up).
 2. In Workbench: BacnetNetwork → right-click → Actions → Discover. Wait 60 seconds.
 3. If nothing found: Check BacnetCommLinkIp is bound to the correct network adapter (not 0.0.0.0). Go to BacnetNetwork → BacnetCommLinkIp → Local IP Address → set explicitly.
 4. BBMD required if PBCs on different subnet/VLAN than JACE. Enable BBMD on BacnetCommLinkIp → set BDT (Broadcast Distribution Table) entries for each PBC subnet.
@@ -2417,8 +2417,8 @@ Fault = device is communicating but returning an error on this specific point.
 
 **Point Naming Conventions (critical for large Phoenix installs):**
 Use a consistent naming scheme across all proxy points. Recommended format:
-`[Building]_[Floor]_[Room]_[Device]_[Parameter]`
-Example: `SciB_F2_L201_PBC01_ExhaustCFM_Actual`
+\`[Building]_[Floor]_[Room]_[Device]_[Parameter]\`
+Example: \`SciB_F2_L201_PBC01_ExhaustCFM_Actual\`
 - Avoid spaces — use underscores
 - Avoid hyphens — cause ORD parsing issues
 - Keep names under 50 characters for Px graphics compatibility
@@ -2428,10 +2428,10 @@ Example: `SciB_F2_L201_PBC01_ExhaustCFM_Actual`
 When a proxy point goes stale, kitControl components receive a {stale} StatusNumeric. An And gate with one stale input will output {null} — this can cause downstream logic to freeze.
 
 Safe pattern for handling stale inputs:
-```
+\`\`\`
 ProxyPoint → StatusToNumeric (strips status, returns raw value OR a fallback)
 StatusToNumeric.Out → your logic
-```
+\`\`\`
 Alternative: Use a Max or Min component with a hardcoded NumericConst as a secondary input — the non-stale const ensures the logic doesn't freeze.
 
 **Alarm Prioritization for Phoenix Systems:**
@@ -2473,14 +2473,14 @@ File → Export Station Components → saves Wire Sheet logic, alarm configs, an
 
 **1. Install required modules on JACE (if not already present):**
 - In Workbench: connect to Platform → Software Manager
-- Required jars: `bacnet-rt.jar`, `bacnetWb.jar`, `bacnetOws.jar`
-- Phoenix Controls Workbench also requires: `phoenixControls-rt.jar`, `phoenixControls-wb.jar`
+- Required jars: \`bacnet-rt.jar\`, \`bacnetWb.jar\`, \`bacnetOws.jar\`
+- Phoenix Controls Workbench also requires: \`phoenixControls-rt.jar\`, \`phoenixControls-wb.jar\`
 - Select all → Install → Commit → Restart JACE when prompted
 - Verify installation: Platform → Software Manager → confirm all show as Installed
 
 **2. Configure BACnet Network component:**
 - Nav tree: Config → Drivers → right-click → New → BacnetNetwork
-- Name it `PhoenixBACnet` (or similar — name is for your reference only)
+- Name it \`PhoenixBACnet\` (or similar — name is for your reference only)
 - Open BacnetNetwork → Property Sheet:
   - **Object Id**: Set to a unique BACnet device instance for the N4 station itself (e.g. 9000001). Default of -1 is INVALID — will cause discovery failures.
   - **Device Name**: Descriptive name (e.g. "N4-JACE-Lab-Building-A")
@@ -2575,7 +2575,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
    - Add Calendar for holidays if needed
    - Output: BooleanPoint (true = occupied, false = unoccupied)
 
-2. **Add a BooleanWritable** point named `OccupancyOverride`:
+2. **Add a BooleanWritable** point named \`OccupancyOverride\`:
    - Default value: null (so schedule controls)
    - Priority 8 — allows manual override above schedule
    - This lets a BMS operator force occupied mode
@@ -2583,9 +2583,9 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 3. **Add a PrioritySelect or Switch block**:
    - If OccupancyOverride is non-null → use override
    - Else → use schedule output
-   - Wire output to a BooleanWritable named `RoomOccupied`
+   - Wire output to a BooleanWritable named \`RoomOccupied\`
 
-4. **Wire `RoomOccupied` to the PBC Occupied Command proxy point**:
+4. **Wire \`RoomOccupied\` to the PBC Occupied Command proxy point**:
    - Right-click proxy point → Property Sheet → verify it's writable
    - Draw wire from RoomOccupied output to PBC Occupied Command proxy point input
    - Set tuning policy on the proxy point: Min Write Time = 0, write on change = true
@@ -2652,7 +2652,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 **Volumetric offset monitoring:**
 1. Add proxy points for zone exhaust CFM total and zone supply CFM total
 2. **Add a Subtract block**: Exhaust CFM − Supply CFM = Offset CFM
-3. **Add a NumericPoint** named `CalculatedOffset` — wire Subtract output to it
+3. **Add a NumericPoint** named \`CalculatedOffset\` — wire Subtract output to it
 4. **Add a Between block**: check offset is within acceptable range (e.g. 200-400 CFM for a standard negative pressure lab)
 5. Add AlarmExt for offset out of range condition
 
@@ -2662,7 +2662,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 
 **Goal**: Allow BMS operator or fire panel to trigger emergency exhaust on all hoods.
 
-1. **Add a BooleanWritable** named `EmergencyExhaustCommand` (Priority 1 — highest priority)
+1. **Add a BooleanWritable** named \`EmergencyExhaustCommand\` (Priority 1 — highest priority)
 2. **Wire to PBC Emergency Exhaust proxy point** (writable BACnet object)
 3. **Add an AlarmExt** to EmergencyExhaustCommand:
    - To Offnormal: "EMERGENCY EXHAUST ACTIVE — Lab [location]"
@@ -2677,13 +2677,13 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 
 **Organization:**
 - Create one wiresheet per room/zone — never put all logic in a single wiresheet
-- Use folders: `Zone_Lab201/`, `Zone_Lab202/`, etc.
-- Within each zone folder: separate sub-folders for `Setpoints/`, `Alarms/`, `Overrides/`, `History/`
-- Name every component clearly: `Lab201_OccupancySchedule`, `Lab201_EmergencyExhaust`, not `Schedule1`, `Boolean2`
+- Use folders: \`Zone_Lab201/\`, \`Zone_Lab202/\`, etc.
+- Within each zone folder: separate sub-folders for \`Setpoints/\`, \`Alarms/\`, \`Overrides/\`, \`History/\`
+- Name every component clearly: \`Lab201_OccupancySchedule\`, \`Lab201_EmergencyExhaust\`, not \`Schedule1\`, \`Boolean2\`
 
 **Point naming conventions for Phoenix systems:**
-- `[Building]_[Floor]_[Room]_[HoodNumber]_[PointDescription]`
-- Example: `BldgA_F2_Lab201_H3_ExhaustCFM`, `BldgA_F2_Lab201_OccupancyCmd`
+- \`[Building]_[Floor]_[Room]_[HoodNumber]_[PointDescription]\`
+- Example: \`BldgA_F2_Lab201_H3_ExhaustCFM\`, \`BldgA_F2_Lab201_OccupancyCmd\`
 - Consistent naming enables sorting, searching, and future maintenance
 
 **Priority levels for Phoenix proxy point writes:**
@@ -2698,10 +2698,10 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 **Never write at Priority 16** to Phoenix proxy points — this is the default fallback level and competes with PBC internal logic. Use 14 or higher for all intentional writes from N4.
 
 **Avoiding stale point issues in Phoenix systems:**
-- kitControl logic blocks treat stale inputs as null — an `And` block with one stale input outputs null, not false
-- Add a `FaultExt` or null-check logic: if proxy point goes stale for > 30 seconds → fire alarm, write safe default to any linked setpoints
+- kitControl logic blocks treat stale inputs as null — an \`And\` block with one stale input outputs null, not false
+- Add a \`FaultExt\` or null-check logic: if proxy point goes stale for > 30 seconds → fire alarm, write safe default to any linked setpoints
 - For critical safety points: use COV subscription + 5-minute poll backup (belt-and-suspenders approach)
-- Set `Stale Time` in tuning policy to at least 2x the poll interval — prevents false stale alarms
+- Set \`Stale Time\` in tuning policy to at least 2x the poll interval — prevents false stale alarms
 
 **Write-on-start, write-on-enable, write-on-up behavior:**
 - **Write on Start**: Writes the point value to field device when the station starts. Use for setpoints that the PBC should receive on boot.
@@ -2736,7 +2736,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 **Scenario 4: AlarmExt on Phoenix proxy point doesn't fire when alarm occurs**
 - Cause: AlarmExt is on the Niagara proxy point, not on the actual alarm state object
 - Fix: The binary proxy point must be the PBC's alarm output (BACnet binary input object). Confirm the object is the alarm status, not the CFM or position object.
-- Also check: AlarmExt threshold — for a BinaryStatusBoolean, set `To Offnormal = Active/True`
+- Also check: AlarmExt threshold — for a BinaryStatusBoolean, set \`To Offnormal = Active/True\`
 - Check: AlarmService → Alarm Console → any errors in alarm routing
 
 **Scenario 5: Poll Scheduler busy time > 75% after adding Phoenix points**
@@ -2748,7 +2748,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 
 **Scenario 6: BACnet discovery finds device but point manager shows no objects**
 - Cause: Device is not supporting ReadPropertyMultiple — N4 falls back to single property reads, which times out
-- Fix: In BacnetDevice Property Sheet → set `Max Read Multiple Objects` = 1, `Max Read Multiple Properties` = 1
+- Fix: In BacnetDevice Property Sheet → set \`Max Read Multiple Objects\` = 1, \`Max Read Multiple Properties\` = 1
 - This forces N4 to read one object at a time — slower but compatible
 - Alternatively: Check PBC firmware version — very old PBC firmware has limited BACnet object support
 
@@ -2770,7 +2770,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 #### CONTROLS LOGIC CONCEPTS FOR LAB HVAC — N4 IMPLEMENTATION
 
 **High-Signal Select (used by MIJ for thermal demand):**
-- In N4 kitControl: use `HighSignalSelect` block (2 inputs → outputs the higher value)
+- In N4 kitControl: use \`HighSignalSelect\` block (2 inputs → outputs the higher value)
 - Application: Supply valve command = max(thermal demand CFM, pressurization CFM)
 - Wire: Thermal demand output → Input1; Pressurization offset CFM → Input2; Output → supply valve setpoint proxy point
 - This replicates the MIJ high-signal-select logic in N4 for integrated systems
@@ -2802,7 +2802,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 - CO2 setpoint typically 1000-1100 ppm for occupied labs
 
 **N4 Logical Interlocks for Phoenix Systems:**
-```
+\`\`\`
 Fan Status Interlock:
 AHU Supply Fan = ON → enable PBC normal operation
 AHU Supply Fan = OFF → send Emergency Exhaust command to PBCs (if required by sequence)
@@ -2814,7 +2814,7 @@ Wire: SashPosition proxy > AlarmThreshold → And block → RoomDark binary → 
 Unoccupied Low-Flow Interlock:
 If (Occupied = false) AND (ZPS = unoccupied) → confirm setback active
 If (Occupied = false) AND (ExhaustCFM > SetbackMax + 50 CFM) → investigate — possible override stuck
-```
+\`\`\`
 
 ### ══════════════════════════════════════
 
