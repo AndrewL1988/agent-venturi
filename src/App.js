@@ -1220,7 +1220,7 @@ The Niagara 4 station database is a hierarchical object model. Everything lives 
 - **Sys** — system-level properties, modules, platform info
 
 **Phoenix Controls station folder hierarchy (recommended):**
-```
+\`\`\`
 Station
 └── Config
     └── Drivers
@@ -1236,7 +1236,7 @@ Station
                         ├── Flow_Alarm        (BooleanPoint proxy)
                         ├── Pressure_Alarm    (BooleanPoint proxy)
                         └── Hood_1_FV         (NumericPoint proxy)
-```
+\`\`\`
 
 ---
 
@@ -1415,7 +1415,7 @@ Critical step — controls whether points go stale:
 
 **Sequence 1: Volumetric Offset Monitoring Wire Sheet**
 Purpose: Monitor that exhaust = supply + offset, alarm if deviation exceeds threshold.
-```
+\`\`\`
 Components needed:
 - Zone_Exhaust_CFM (NumericPoint proxy)
 - Zone_Supply_CFM (NumericPoint proxy)
@@ -1426,32 +1426,32 @@ Components needed:
 - GreaterThan → A: Offset_Deviation_Absolute, B: 50 (CFM tolerance) → output: Offset_Alarm
 - BooleanDelay → input: Offset_Alarm, delay: 30s → output: Offset_Alarm_Delayed
 - AlarmExt → on Offset_Alarm_Delayed BooleanPoint
-```
+\`\`\`
 
 **Sequence 2: Occupied/Unoccupied with Override Wire Sheet**
 Purpose: Schedule-based occupancy with manual override capability.
-```
+\`\`\`
 Components needed:
 - WeeklySchedule → output: Schedule_Occupied (boolean)
 - Occupied_Override (BooleanWritable — priority 8, operator writable)
 - Or → inputs: Schedule_Occupied, Occupied_Override → output: Occupied_Command
 - Link Occupied_Command → PBC Occupied_Cmd BooleanWritable proxy (in1 slot, priority 10)
-```
+\`\`\`
 Note: Niagara priority array — lower number = higher priority. Schedule writes at priority 13, override at 8.
 
 **Sequence 3: High-Signal-Select (mirrors MIJ thermal demand logic)**
 Purpose: Supply valve takes highest of thermal demand or pressurization requirement.
-```
+\`\`\`
 Components needed:
 - Pressurization_CFM_Required (NumericPoint — from zone offset calculation)
 - Thermal_CFM_Required (NumericPoint — from temperature control loop output)
 - Max → inputs: Pressurization_CFM, Thermal_CFM → output: Supply_CFM_Command
 - Link Supply_CFM_Command → PBC Supply Setpoint NumericWritable proxy
-```
+\`\`\`
 
 **Sequence 4: Emergency Exhaust Latch with Reset**
 Purpose: Emergency trigger latches all exhaust to max; manual reset required.
-```
+\`\`\`
 Components needed:
 - Emergency_Trigger (BooleanPoint — from fire alarm, gas detector, or manual button)
 - Manual_Reset (BooleanWritable — operator-level reset point)
@@ -1459,11 +1459,11 @@ Components needed:
 - Link Emergency_Active → PBC Emergency_Exhaust BooleanWritable proxy (priority 3 — high)
 - HistoryExt on Emergency_Active — record all emergency events
 - AlarmExt on Emergency_Trigger — immediate routing to safety officer
-```
+\`\`\`
 
 **Sequence 5: Cascading Room Pressurization (Healthcare)**
 Purpose: Maintain pressure cascade across AII room → anteroom → corridor.
-```
+\`\`\`
 Room hierarchy: Corridor (+) > Anteroom (++) > AII Room (−)
 Components needed (per room boundary):
 - Room1_Exhaust_CFM, Room2_Supply_CFM (proxy points)
@@ -1472,11 +1472,11 @@ Components needed (per room boundary):
 - Subtract → Actual_Offset - DesiredOffset → Offset_Error
 - LoopPoint (PI only, no derivative for airflow) → controlled var: Offset_Error, setpoint: 0
   → output: Trim_Signal → linked to supply valve setpoint adjustment
-```
+\`\`\`
 
 **Sequence 6: PID Temperature Reset of Exhaust Setpoint**
 Purpose: Increase lab exhaust when room temperature rises (thermal override).
-```
+\`\`\`
 Components needed:
 - Room_Temp (NumericPoint proxy — room temp sensor)
 - Temp_Setpoint (NumericWritable — 70°F default)
@@ -1490,7 +1490,7 @@ Components needed:
   - Out Max: Max_CFM (e.g. 1500 CFM)
   - Output: Thermal_CFM_Demand
 - Max → inputs: Pressurization_CFM, Thermal_CFM_Demand → Supply_Command
-```
+\`\`\`
 
 ---
 
@@ -1686,7 +1686,7 @@ Phoenix Controls valve model strings encode all key specifications. Structure va
 Every Niagara 4 station follows a consistent hierarchy. Understanding this is prerequisite to programming Phoenix Controls systems in N4:
 
 **Station Nav Tree Structure:**
-```
+\`\`\`
 Config/
   ├── Drivers/
   │   ├── BacnetNetwork/          ← All BACnet comms live here
@@ -1705,7 +1705,7 @@ Config/
   │   ├── ScheduleService
   │   └── UserService
   └── [Logic Folders]/            ← Your control wiresheet logic
-```
+\`\`\`
 
 **Key rule**: The Drivers container handles ALL communication with field devices. Your control logic lives OUTSIDE drivers — in separate folders — and reads/writes to proxy points via links.
 
@@ -1780,12 +1780,12 @@ Use the BACnet Point Manager view (right-click BacnetNetwork → Views → Point
 **Poll scheduler health**: Keep poll scheduler below 75% busy. Check: Config → Drivers → BacnetNetwork → Poll Scheduler → Statistics view. Above 75% = tune your policies. Above 90% = emergency — you'll get stale points and missed alarms.
 
 **Stale points troubleshooting:**
-A proxy point goes `{stale}` when Niagara cannot communicate with the device. Status levels:
-- `{ok}` — Good. Communicating normally.
-- `{stale}` — Device not responding to polls. Check: network connectivity, device power, BACnet device instance duplicates, IP address changed (DHCP scope change).
-- `{disabled}` — Point disabled in Niagara (Enabled=false). Enable it.
-- `{down}` — Device marked down. Station gave up trying. Check physical connection, then: right-click device → Actions → Enable (or ping test first).
-- `{fault}` — Configuration error. Wrong object type or ID for this device.
+A proxy point goes \`{stale}\` when Niagara cannot communicate with the device. Status levels:
+- \`{ok}\` — Good. Communicating normally.
+- \`{stale}\` — Device not responding to polls. Check: network connectivity, device power, BACnet device instance duplicates, IP address changed (DHCP scope change).
+- \`{disabled}\` — Point disabled in Niagara (Enabled=false). Enable it.
+- \`{down}\` — Device marked down. Station gave up trying. Check physical connection, then: right-click device → Actions → Enable (or ping test first).
+- \`{fault}\` — Configuration error. Wrong object type or ID for this device.
 
 **Force update a stale point**: Right-click proxy point → Actions → Force Update (immediately re-polls the device). Useful to confirm a device is back online after fixing a connection issue.
 
@@ -2106,7 +2106,7 @@ A proxy point goes `{stale}` when Niagara cannot communicate with the device. St
 #### CONTROLS LOGIC REFERENCE — COMMON PHOENIX CONTROLS SEQUENCES IN N4
 
 **Volumetric Offset Control (N4 implementation):**
-```
+\`\`\`
 Exhaust_CFM_Actual (NumericPoint proxy)
     → HighSignalSelect.In1
     
@@ -2121,10 +2121,10 @@ Thermal_Demand_CFM (from PID)
     → HighSignalSelect.In1
 
 HighSignalSelect.Out → Supply_Command_Write (NumericWritable proxy, In16)
-```
+\`\`\`
 
 **Face Velocity Alarm Logic (N4 local check, supplemental to PBC):**
-```
+\`\`\`
 FV_Actual (NumericPoint proxy from FHD500)
     → LessThan.In1
     
@@ -2135,10 +2135,10 @@ LessThan.Out (boolean: true when FV < 100 fpm)
     → Timer.In (delay 30s before alarm — prevents nuisance alarms during sash movement)
 
 Timer.Out → AlarmExt (on FV_Low_Alarm_Local boolean point)
-```
+\`\`\`
 
 **Emergency Exhaust with Auto-Reset (N4 logic):**
-```
+\`\`\`
 Global_Emergency_Switch (BooleanWritable — operator input)
     → Or.In1
 
@@ -2147,10 +2147,10 @@ Fire_Alarm_Input (BooleanPoint proxy from fire panel BACnet)
 
 Or.Out → Emergency_Exhaust_Write (BooleanWritable proxy, In1)
 Or.Out → AlarmExt (emergency active alarm)
-```
+\`\`\`
 
 **Sash Energy Waste Alert (N4 supplemental logic):**
-```
+\`\`\`
 Sash_Open (BooleanPoint proxy — true if sash >6" open from FHD500)
     → And.In1
 
@@ -2159,7 +2159,7 @@ Room_Unoccupied (from schedule, inverted via Not)
 
 And.Out → Timer.In (delay 15min — ignore brief unoccupied moments)
 Timer.Out → EnergyWaste_Alarm (BooleanPoint with AlarmExt → EnergyAlert class)
-```
+\`\`\`
 
 ---
 
@@ -2256,54 +2256,54 @@ The LoopPoint is Niagara's built-in PID controller. Used extensively in Phoenix 
 #### CONTROL SEQUENCES COMMONLY BUILT IN N4 FOR PHOENIX SYSTEMS
 
 **1. Occupied/Unoccupied Setback Control**
-```
+\`\`\`
 WeeklySchedule → BooleanPoint (OccupiedStatus)
 OccupiedStatus → IfElse → NumericWritable (FV_Setpoint)
   If True: 100 fpm (occupied setpoint)
   If False: 60 fpm (setback setpoint)
 FV_Setpoint → BACnet write → PBC Occupied_FV_SP proxy point
-```
+\`\`\`
 **Key consideration**: PBC must be configured to accept BACnet writes to its setpoint objects. Verify the PBC's BACnet object is writable (not read-only) before building this sequence.
 
 **2. Temperature-Based Supply Air Reset**
-```
+\`\`\`
 Zone_Temp_Sensor (proxy point) → LoopPoint (PI controller)
   SP = 72°F, Action = Reverse, P = 5°F, I = 180s
 LoopPoint.Out → LinearScale (0–100% → 55°F–65°F)
 LinearScale.Out → NumericWritable (SAT_Setpoint)
 SAT_Setpoint → BACnet write → AHU supply air temp controller
-```
+\`\`\`
 
 **3. Emergency Exhaust Override Logic**
-```
+\`\`\`
 BooleanPoint (EmergencyInput) — from fire alarm panel or manual switch
 EmergencyInput → BACnet write → PBC Emergency_Exhaust_Override proxy point
 Also trigger: AlarmExt on EmergencyInput → Alert maintenance immediately
-```
+\`\`\`
 
 **4. Multi-Zone Pressurization Monitoring**
-```
+\`\`\`
 PBC_Room_Offset (proxy point — actual CFM offset) → LoopPoint or direct comparison
 Compare actual offset vs design offset minimum
 If actual < minimum for >30 seconds → generate alarm
 Route alarm to LabSafety alarm class
-```
+\`\`\`
 
 **5. Reheat Coil Sequencing**
-```
+\`\`\`
 Zone_Temp (proxy) → LoopPoint (heating PI)
 LoopPoint.Out → Sequencer (splits 0–100% output across multiple stages)
 Sequencer Stage1 (0–33%) → Valve1_Command (BACnet write)
 Sequencer Stage2 (33–66%) → Valve2_Command (BACnet write)
 Sequencer Stage3 (66–100%) → Valve3_Command (BACnet write)
-```
+\`\`\`
 
 **6. Occupancy Cascade — ZPS to N4 to PBC**
-```
+\`\`\`
 ZPS physical signal → ACM UIO input → PBC Occupied_Status BACnet object
 PBC Occupied_Status (proxy point in N4) → BooleanPoint
 BooleanPoint → drives WeeklySchedule override OR directly wires to setback logic
-```
+\`\`\`
 
 ---
 
@@ -2428,10 +2428,10 @@ Example: \`SciB_F2_L201_PBC01_ExhaustCFM_Actual\`
 When a proxy point goes stale, kitControl components receive a {stale} StatusNumeric. An And gate with one stale input will output {null} — this can cause downstream logic to freeze.
 
 Safe pattern for handling stale inputs:
-```
+\`\`\`
 ProxyPoint → StatusToNumeric (strips status, returns raw value OR a fallback)
 StatusToNumeric.Out → your logic
-```
+\`\`\`
 Alternative: Use a Max or Min component with a hardcoded NumericConst as a secondary input — the non-stale const ensures the logic doesn't freeze.
 
 **Alarm Prioritization for Phoenix Systems:**
@@ -2802,7 +2802,7 @@ Phoenix Controls PBCs handle all critical lab safety control (face velocity, vol
 - CO2 setpoint typically 1000-1100 ppm for occupied labs
 
 **N4 Logical Interlocks for Phoenix Systems:**
-```
+\`\`\`
 Fan Status Interlock:
 AHU Supply Fan = ON → enable PBC normal operation
 AHU Supply Fan = OFF → send Emergency Exhaust command to PBCs (if required by sequence)
@@ -2814,7 +2814,7 @@ Wire: SashPosition proxy > AlarmThreshold → And block → RoomDark binary → 
 Unoccupied Low-Flow Interlock:
 If (Occupied = false) AND (ZPS = unoccupied) → confirm setback active
 If (Occupied = false) AND (ExhaustCFM > SetbackMax + 50 CFM) → investigate — possible override stuck
-```
+\`\`\`
 
 ### ══════════════════════════════════════
 
