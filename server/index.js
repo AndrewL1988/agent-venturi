@@ -10,8 +10,8 @@ const fetch   = require("node-fetch");
 const { createClient }              = require("@supabase/supabase-js");
 const ws                             = require("ws");
 const OpenAI                         = require("openai");
-const { ClerkExpressRequireAuth,
-        ClerkExpressWithAuth }       = require("@clerk/clerk-sdk-node");
+// @clerk/express — current recommended Clerk SDK for Express
+const { clerkMiddleware, getAuth, requireAuth } = require("@clerk/express");
 
 // ============================================================
 // SAFEGUARD 0 — ENVIRONMENT VARIABLE CONFIGURATION
@@ -209,6 +209,16 @@ setInterval(() => {
 // ============================================================
 const app = express();
 
+// CRITICAL: Trust Railway's proxy — required for express-rate-limit behind Railway
+app.set("trust proxy", 1);
+
+// Clerk middleware — runs on every request, populates req.auth
+// Requires both secret key AND publishable key on the server side
+app.use(clerkMiddleware({
+  secretKey:      process.env.CLERK_SECRET_KEY,
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY || process.env.REACT_APP_CLERK_PUBLISHABLE_KEY,
+}));
+
 app.use(express.json({ limit: "50mb" }));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || "http://localhost:3000",
@@ -222,17 +232,26 @@ app.use("/api/", rateLimit({
   windowMs: 60_000, max: 60,
   message: { error: "Too many requests. Please wait and try again." },
   standardHeaders: true, legacyHeaders: false,
+  // Explicit key generator — safe behind Railway proxy with trust proxy set
+  keyGenerator: (req) => req.ip || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "unknown",
 }));
 
 // Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    realtime: { transport: ws },
-    global: { headers: { "x-client-info": "agent-venturi/2.0" } },
-  }
-);
+// Support both SUPABASE_SERVICE_ROLE_KEY and SUPABASE_SERVICE_KEY
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+if (!process.env.SUPABASE_URL) console.error("CRITICAL: SUPABASE_URL is not set");
+if (!SUPABASE_KEY) console.error("CRITICAL: Neither SUPABASE_SERVICE_ROLE_KEY nor SUPABASE_SERVICE_KEY is set");
+
+const supabase = (process.env.SUPABASE_URL && SUPABASE_KEY)
+  ? createClient(
+      process.env.SUPABASE_URL,
+      SUPABASE_KEY,
+      {
+        realtime: { transport: ws },
+        global: { headers: { "x-client-info": "agent-venturi/2.0" } },
+      }
+    )
+  : null;
 
 // OpenAI — used only for RAG embeddings (not chat)
 const openaiClient = CFG.OPENAI_API_KEY ? new OpenAI({ apiKey: CFG.OPENAI_API_KEY }) : null;
@@ -383,54 +402,109 @@ app.get("/api/admin/setup-rag", async (req, res) => {
     let loaded = 0, failed = 0;
     const errors = [];
     try {
+      // Validate OpenAI client
+      if (!openaiClient) {
+        log("ERROR", "RAG setup: OPENAI_API_KEY missing or invalid — cannot embed");
+        return;
+      }
+
+      // Validate Supabase
+      if (!process.env.SUPABASE_URL || !SUPABASE_KEY) {
+        log("ERROR", "RAG setup: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY / SUPABASE_SERVICE_KEY missing");
+        return;
+      }
+
+      // Test OpenAI connection first
+      try {
+        await openaiClient.embeddings.create({ model: "text-embedding-3-small", input: "test" });
+        log("INFO", "RAG setup: OpenAI connection verified");
+      } catch (testErr) {
+        log("ERROR", "RAG setup: OpenAI API test failed — " + testErr.message);
+        return;
+      }
+
+      // Test Supabase connection
+      try {
+        const { error: tableErr } = await supabase.from("knowledge_chunks").select("id").limit(1);
+        if (tableErr) {
+          log("ERROR", "RAG setup: Supabase table check failed — " + tableErr.message + ". Run supabase_rag_setup.sql first.");
+          return;
+        }
+        log("INFO", "RAG setup: Supabase connection verified");
+      } catch (sbErr) {
+        log("ERROR", "RAG setup: Supabase connection failed — " + sbErr.message);
+        return;
+      }
+
       const chunks = require("./knowledge_chunks.json");
+      log("INFO", "RAG setup: starting embed of " + chunks.length + " chunks");
 
       for (const chunk of chunks) {
         try {
-          // Check if chunk already exists — use maybeSingle() to avoid errors on no rows
+          // Check if chunk already exists
           const { data: existing } = await supabase
             .from("knowledge_chunks")
             .select("id")
             .eq("id", chunk.id)
             .maybeSingle();
 
-          if (existing) { loaded++; continue; }
+          if (existing) {
+            loaded++;
+            continue;
+          }
 
           // Embed
           const text = chunk.topic + "\nTags: " + chunk.tags.join(", ") + "\n\n" + chunk.content;
           const resp = await openaiClient.embeddings.create({ model: "text-embedding-3-small", input: text });
           const embedding = resp.data[0].embedding;
 
-          // Upsert
+          // Upsert into Supabase
           const { error: upsertErr } = await supabase.from("knowledge_chunks").upsert({
-            id: chunk.id, topic: chunk.topic, category: chunk.category,
-            tags: chunk.tags, content: chunk.content, embedding,
+            id:        chunk.id,
+            topic:     chunk.topic,
+            category:  chunk.category,
+            tags:      chunk.tags,
+            content:   chunk.content,
+            embedding: embedding,
           });
 
-          if (upsertErr) { errors.push(chunk.id + ": " + upsertErr.message); failed++; }
-          else loaded++;
+          if (upsertErr) {
+            const msg = chunk.id + ": " + upsertErr.message;
+            log("WARN", "RAG chunk upsert failed: " + msg);
+            errors.push(msg);
+            failed++;
+          } else {
+            loaded++;
+            if (loaded % 10 === 0) log("INFO", "RAG progress: " + loaded + " loaded, " + failed + " failed");
+          }
 
-          await new Promise(r => setTimeout(r, 150));
-        } catch (err) {
-          errors.push(chunk.id + ": " + err.message);
+          await new Promise(r => setTimeout(r, 200));
+        } catch (chunkErr) {
+          const msg = chunk.id + ": " + chunkErr.message;
+          log("WARN", "RAG chunk error: " + msg);
+          errors.push(msg);
           failed++;
         }
       }
 
-      // Save status
+      // Save status record
       try {
         await supabase.from("rag_setup_status").upsert({
-          id: "latest",
-          status: failed === 0 ? "complete" : "complete_with_errors",
-          loaded, failed,
-          errors: errors.slice(0, 10),
+          id:           "latest",
+          status:       failed === 0 ? "complete" : "complete_with_errors",
+          loaded,
+          failed,
+          errors:       errors.slice(0, 10),
           completed_at: new Date().toISOString(),
         });
-      } catch {}
+      } catch (statusErr) {
+        log("WARN", "RAG: could not save status record — " + statusErr.message);
+      }
 
-      log("INFO", "RAG setup complete", { loaded, failed });
+      log("INFO", "RAG setup complete", { loaded, failed, errors: errors.slice(0, 5) });
+
     } catch (e) {
-      log("ERROR", "RAG background embed failed", { error: e.message });
+      log("ERROR", "RAG background embed failed", { error: e.message, stack: e.stack?.slice(0, 300) });
     }
   })();
 });
@@ -536,11 +610,18 @@ app.get("/api/admin/stats", (req, res) => {
 // ============================================================
 // MAIN AI CHAT ROUTE — all safeguards applied in order
 // ============================================================
-app.post("/api/chat", agentGuard, ClerkExpressWithAuth(), async (req, res) => {
+// Safe auth middleware — allows request through even if Clerk token is missing/invalid
+// With @clerk/express + clerkMiddleware(), req.auth is already populated by the global middleware.
+// This is just a passthrough that never blocks — signed-in users get userId, guests get null.
+function safeAuth(req, res, next) {
+  next();
+}
+
+app.post("/api/chat", agentGuard, safeAuth, async (req, res) => {
   const startTime = Date.now();
   const ip        = getIP(req);
-  const isSignedIn = !!req.auth?.userId;
-  const userId    = req.auth?.userId || null;
+  const isSignedIn = !!getAuth(req)?.userId;
+  const userId    = getAuth(req)?.userId || null;
 
   // ── Safeguard 9: agent enabled check (also in middleware above) ──
   if (!CFG.AGENT_ENABLED) {
@@ -593,6 +674,27 @@ app.post("/api/chat", agentGuard, ClerkExpressWithAuth(), async (req, res) => {
 
   // ── Increment counters BEFORE execution ───────────────────────
   incrementCounters();
+
+  // ── RAG: build context-aware system prompt if enabled ─────────
+  let effectiveSystem = system;
+  if (CFG.RAG_ENABLED && system && supabase && openaiClient) {
+    try {
+      const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
+      const questionText = Array.isArray(lastUserMsg?.content)
+        ? lastUserMsg.content.filter(b => b.type === "text").map(b => b.text).join(" ")
+        : (lastUserMsg?.content || "");
+      if (questionText.length > 10) {
+        const ragContext = await retrieveChunks(questionText);
+        if (ragContext) {
+          effectiveSystem = RAG_SYSTEM_HEADER + ragContext;
+          log("INFO", "RAG: using retrieved context", { chars: effectiveSystem.length });
+        }
+      }
+    } catch (ragErr) {
+      log("WARN", "RAG retrieval error — falling back to full prompt", { error: ragErr.message });
+      effectiveSystem = system;
+    }
+  }
 
   // ── Safeguard 4 + 7: timeout + single retry ───────────────────
   const runAI = async () => {
@@ -660,7 +762,8 @@ app.post("/api/chat", agentGuard, ClerkExpressWithAuth(), async (req, res) => {
 // ============================================================
 // USER SYNC
 // ============================================================
-app.post("/api/user/sync", ClerkExpressRequireAuth(), async (req, res) => {
+app.post("/api/user/sync", safeAuth, async (req, res) => {
+  if (!getAuth(req)?.userId) return res.json({ ok: false, reason: "not signed in" });
   try {
     const { userId, email, fullName } = req.body;
     await supabase.from("users")
@@ -684,43 +787,44 @@ app.get("/api/free-status", (req, res) => {
 // CHAT ROUTES (auth required — no safeguard overhead needed,
 // these are just DB reads/writes not AI executions)
 // ============================================================
-app.get("/api/chats", ClerkExpressRequireAuth(), async (req, res) => {
+app.get("/api/chats", safeAuth, async (req, res) => {
+  if (!getAuth(req)?.userId) return res.json([]);
   try {
     const { data, error } = await supabase.from("chats")
-      .select("id, title, created_at, updated_at").eq("user_id", req.auth.userId)
+      .select("id, title, created_at, updated_at").eq("user_id", getAuth(req)?.userId)
       .order("updated_at", { ascending: false });
     if (error) throw error; res.json(data);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post("/api/chats", ClerkExpressRequireAuth(), async (req, res) => {
+app.post("/api/chats", safeAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from("chats")
-      .insert({ user_id: req.auth.userId, title: req.body.title || "New chat" }).select().single();
+      .insert({ user_id: getAuth(req)?.userId, title: req.body.title || "New chat" }).select().single();
     if (error) throw error; res.json(data);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.patch("/api/chats/:id", ClerkExpressRequireAuth(), async (req, res) => {
+app.patch("/api/chats/:id", safeAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from("chats")
-      .update({ title: req.body.title }).eq("id", req.params.id).eq("user_id", req.auth.userId).select().single();
+      .update({ title: req.body.title }).eq("id", req.params.id).eq("user_id", getAuth(req)?.userId).select().single();
     if (error) throw error; res.json(data);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.delete("/api/chats/:id", ClerkExpressRequireAuth(), async (req, res) => {
+app.delete("/api/chats/:id", safeAuth, async (req, res) => {
   try {
     const { error } = await supabase.from("chats")
-      .delete().eq("id", req.params.id).eq("user_id", req.auth.userId);
+      .delete().eq("id", req.params.id).eq("user_id", getAuth(req)?.userId);
     if (error) throw error; res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get("/api/chats/:id/messages", ClerkExpressRequireAuth(), async (req, res) => {
+app.get("/api/chats/:id/messages", safeAuth, async (req, res) => {
   try {
     const { data: chat, error: chatErr } = await supabase.from("chats")
-      .select("id").eq("id", req.params.id).eq("user_id", req.auth.userId).single();
+      .select("id").eq("id", req.params.id).eq("user_id", getAuth(req)?.userId).single();
     if (chatErr || !chat) return res.status(404).json({ error: "Chat not found" });
     const { data, error } = await supabase.from("messages")
       .select("id, role, content, images, created_at").eq("chat_id", req.params.id)
@@ -729,13 +833,13 @@ app.get("/api/chats/:id/messages", ClerkExpressRequireAuth(), async (req, res) =
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post("/api/chats/:id/messages", ClerkExpressRequireAuth(), async (req, res) => {
+app.post("/api/chats/:id/messages", safeAuth, async (req, res) => {
   try {
     const { role, content, images } = req.body;
     await supabase.from("chats").update({ updated_at: new Date().toISOString() })
-      .eq("id", req.params.id).eq("user_id", req.auth.userId);
+      .eq("id", req.params.id).eq("user_id", getAuth(req)?.userId);
     const { data, error } = await supabase.from("messages")
-      .insert({ chat_id: req.params.id, user_id: req.auth.userId, role, content, images: images || null })
+      .insert({ chat_id: req.params.id, user_id: getAuth(req)?.userId, role, content, images: images || null })
       .select().single();
     if (error) throw error; res.json(data);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -744,33 +848,35 @@ app.post("/api/chats/:id/messages", ClerkExpressRequireAuth(), async (req, res) 
 // ============================================================
 // ALARM ROUTES
 // ============================================================
-app.get("/api/alarms", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("alarm_logs").select("*").eq("user_id", req.auth.userId).order("created_at", { ascending: false }); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.get("/api/alarms", safeAuth, async (req, res) => {
+  if (!getAuth(req)?.userId) return res.json([]);
+  try { const { data, error } = await supabase.from("alarm_logs").select("*").eq("user_id", getAuth(req)?.userId).order("created_at", { ascending: false }); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.post("/api/alarms", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("alarm_logs").insert({ ...req.body, user_id: req.auth.userId }).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.post("/api/alarms", safeAuth, async (req, res) => {
+  try { const { data, error } = await supabase.from("alarm_logs").insert({ ...req.body, user_id: getAuth(req)?.userId }).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.patch("/api/alarms/:id", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("alarm_logs").update(req.body).eq("id", req.params.id).eq("user_id", req.auth.userId).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.patch("/api/alarms/:id", safeAuth, async (req, res) => {
+  try { const { data, error } = await supabase.from("alarm_logs").update(req.body).eq("id", req.params.id).eq("user_id", getAuth(req)?.userId).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.delete("/api/alarms/:id", ClerkExpressRequireAuth(), async (req, res) => {
-  try { await supabase.from("alarm_logs").delete().eq("id", req.params.id).eq("user_id", req.auth.userId); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+app.delete("/api/alarms/:id", safeAuth, async (req, res) => {
+  try { await supabase.from("alarm_logs").delete().eq("id", req.params.id).eq("user_id", getAuth(req)?.userId); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ============================================================
 // EQUIPMENT ROUTES
 // ============================================================
-app.get("/api/equipment", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("equipment").select("*").eq("user_id", req.auth.userId).order("created_at", { ascending: false }); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.get("/api/equipment", safeAuth, async (req, res) => {
+  if (!getAuth(req)?.userId) return res.json([]);
+  try { const { data, error } = await supabase.from("equipment").select("*").eq("user_id", getAuth(req)?.userId).order("created_at", { ascending: false }); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.post("/api/equipment", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("equipment").insert({ ...req.body, user_id: req.auth.userId }).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.post("/api/equipment", safeAuth, async (req, res) => {
+  try { const { data, error } = await supabase.from("equipment").insert({ ...req.body, user_id: getAuth(req)?.userId }).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.patch("/api/equipment/:id", ClerkExpressRequireAuth(), async (req, res) => {
-  try { const { data, error } = await supabase.from("equipment").update(req.body).eq("id", req.params.id).eq("user_id", req.auth.userId).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
+app.patch("/api/equipment/:id", safeAuth, async (req, res) => {
+  try { const { data, error } = await supabase.from("equipment").update(req.body).eq("id", req.params.id).eq("user_id", getAuth(req)?.userId).select().single(); if (error) throw error; res.json(data); } catch (err) { res.status(500).json({ error: err.message }); }
 });
-app.delete("/api/equipment/:id", ClerkExpressRequireAuth(), async (req, res) => {
-  try { await supabase.from("equipment").delete().eq("id", req.params.id).eq("user_id", req.auth.userId); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+app.delete("/api/equipment/:id", safeAuth, async (req, res) => {
+  try { await supabase.from("equipment").delete().eq("id", req.params.id).eq("user_id", getAuth(req)?.userId); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ============================================================

@@ -1,4 +1,4 @@
-# railway.toml — Agent Venturi: Phoenix Controls Expert — build v7 (pre-built)
+# railway.toml — Agent Venturi: Phoenix Controls Expert — build v8
 
 [build]
 builder = "nixpacks"
@@ -13,3 +13,6 @@ restartPolicyMaxRetries = 3
 path = "/api/health"
 intervalSeconds = 30
 timeoutSeconds = 10
+
+[nixpacks]
+nodeVersion = "20"
