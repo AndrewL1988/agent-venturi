@@ -30,7 +30,7 @@ const CFG = {
   OPENAI_API_KEY           : process.env.OPENAI_API_KEY || null,
   AGENT_ENABLED            : (process.env.AGENT_ENABLED ?? "true") === "true",
   SAFE_MODE_MAX            : 20,   // SAFE_MODE hard cap (not configurable by design)
-  FREE_LIMIT               : 30,   // free-tier questions per 24hr window
+  FREE_DAILY_LIMIT         : 30,   // free tier: questions per 24hr window
   FREE_WINDOW_MS           : 24 * 60 * 60 * 1000,
   PORT                     : parseInt(process.env.PORT || "3001", 10),
 };
@@ -181,27 +181,34 @@ function withTimeout(promise) {
 // ============================================================
 // FREE-TIER LIMIT (existing logic, preserved)
 // ============================================================
-const freeUsage = new Map();
+// User-based daily usage tracking (keyed by userId for free tier)
+const userDailyUsage = new Map();
 
-function checkFreeLimit(ip) {
-  const now = Date.now();
-  const entry = freeUsage.get(ip);
-  if (!entry || now > entry.resetAt) {
-    freeUsage.set(ip, { count: 1, resetAt: now + CFG.FREE_WINDOW_MS });
-    return { allowed: true, remaining: CFG.FREE_LIMIT - 1, resetAt: now + CFG.FREE_WINDOW_MS };
+function checkUserTier(userId, userMeta) {
+  const role = userMeta?.role || "free";
+  // Admin and pro bypass all limits
+  if (role === "admin" || role === "pro") {
+    return { allowed: true, tier: role, unlimited: true };
   }
-  if (entry.count >= CFG.FREE_LIMIT) {
+  // Free tier: 30 questions per 24hr window
+  const now = Date.now();
+  const entry = userDailyUsage.get(userId);
+  if (!entry || now > entry.resetAt) {
+    userDailyUsage.set(userId, { count: 1, resetAt: now + CFG.FREE_WINDOW_MS });
+    return { allowed: true, tier: "free", remaining: CFG.FREE_DAILY_LIMIT - 1, resetAt: now + CFG.FREE_WINDOW_MS };
+  }
+  if (entry.count >= CFG.FREE_DAILY_LIMIT) {
     const hoursLeft = Math.ceil((entry.resetAt - now) / (1000 * 60 * 60));
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt, hoursLeft };
+    return { allowed: false, tier: "free", remaining: 0, resetAt: entry.resetAt, hoursLeft };
   }
   entry.count++;
-  return { allowed: true, remaining: CFG.FREE_LIMIT - entry.count, resetAt: entry.resetAt };
+  return { allowed: true, tier: "free", remaining: CFG.FREE_DAILY_LIMIT - entry.count, resetAt: entry.resetAt };
 }
 
-// Hourly cleanup — NOT an agent loop, just Map memory management
+// Hourly cleanup
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, e] of freeUsage.entries()) { if (now > e.resetAt) freeUsage.delete(ip); }
+  for (const [uid, e] of userDailyUsage.entries()) { if (now > e.resetAt) userDailyUsage.delete(uid); }
 }, 60 * 60 * 1000);
 
 // ============================================================
@@ -382,11 +389,16 @@ app.get("/api/admin/setup-rag", async (req, res) => {
     return res.status(500).json({ error: "Cannot query Supabase: " + e.message });
   }
 
-  if (existingCount >= 55) {
+  // Load the chunks file to see total expected
+  const allChunks = require("./knowledge_chunks.json");
+  const totalExpected = allChunks.length;
+
+  if (existingCount >= totalExpected) {
     return res.json({
       status: "already_loaded",
       chunks: existingCount,
-      message: "Knowledge base already loaded. Set RAG_ENABLED=true in Railway to activate.",
+      total_expected: totalExpected,
+      message: `All ${totalExpected} chunks already loaded. Set RAG_ENABLED=true in Railway to activate.`,
     });
   }
 
@@ -394,7 +406,9 @@ app.get("/api/admin/setup-rag", async (req, res) => {
   res.json({
     status: "started",
     existing_chunks: existingCount,
-    message: "Embedding started in background (~60 seconds). Check /api/admin/setup-rag-status for progress.",
+    total_expected: totalExpected,
+    new_to_embed: totalExpected - existingCount,
+    message: `Embedding ${totalExpected - existingCount} new chunks in background. Check /api/admin/setup-rag-status for progress.`,
   });
 
   // Background embedding
@@ -530,25 +544,34 @@ app.get("/api/admin/setup-rag-status", async (req, res) => {
       statusRecord = data;
     } catch {}
 
+    // Get total expected from chunks file
+    let totalExpected = 0;
+    try { totalExpected = require("./knowledge_chunks.json").length; } catch {}
+
     if (statusRecord && (statusRecord.status === "complete" || statusRecord.status === "complete_with_errors")) {
+      const allDone = chunkCount >= totalExpected;
       return res.json({
-        status: statusRecord.status,
+        status: allDone ? "complete" : "incomplete",
         chunks_in_db: chunkCount,
+        total_expected: totalExpected,
+        missing: totalExpected - chunkCount,
         loaded: statusRecord.loaded,
         failed: statusRecord.failed,
         errors: statusRecord.errors || [],
         completed_at: statusRecord.completed_at,
-        next_step: chunkCount >= 55
-          ? "Done! Set RAG_ENABLED=true in Railway Variables to activate RAG."
-          : "Only " + chunkCount + " chunks loaded — hit setup-rag again to finish.",
+        next_step: allDone
+          ? "Done! All " + totalExpected + " chunks loaded. Set RAG_ENABLED=true to activate."
+          : (totalExpected - chunkCount) + " chunks still missing — hit setup-rag again to load them.",
       });
     }
 
     return res.json({
       status: chunkCount > 0 ? "in_progress" : "not_started",
       chunks_in_db: chunkCount,
+      total_expected: totalExpected,
+      missing: totalExpected - chunkCount,
       message: chunkCount > 0
-        ? chunkCount + " chunks loaded so far. Still running or hit setup-rag again."
+        ? chunkCount + "/" + totalExpected + " chunks loaded. Hit setup-rag to load remaining " + (totalExpected - chunkCount) + "."
         : "Not started yet — hit /api/admin/setup-rag first.",
     });
   } catch (e) {
@@ -640,19 +663,31 @@ app.post("/api/chat", agentGuard, safeAuth, async (req, res) => {
     return res.status(429).json({ error: rateCheck.reason });
   }
 
-  // ── Free tier check ───────────────────────────────────────────
+  // ── Tier check — app requires sign-in, guests blocked ──────────
   if (!isSignedIn) {
-    const freeCheck = checkFreeLimit(ip);
-    if (!freeCheck.allowed) {
-      return res.status(429).json({
-        error     : `Free session limit reached. You've used all ${CFG.FREE_LIMIT} free questions. Resets in ${freeCheck.hoursLeft} hour${freeCheck.hoursLeft === 1 ? "" : "s"}.`,
-        freeLimit : true,
-        resetAt   : freeCheck.resetAt,
-        hoursLeft : freeCheck.hoursLeft,
-      });
-    }
-    res.setHeader("X-Free-Remaining", freeCheck.remaining);
-    res.setHeader("X-Free-Reset",     freeCheck.resetAt);
+    return res.status(401).json({ error: "Sign in required to use Agent Venturi.", signInRequired: true });
+  }
+
+  // Get user role from Clerk public metadata
+  const authObj = getAuth(req);
+  const userMeta = authObj?.sessionClaims?.publicMetadata || {};
+  const tierCheck = checkUserTier(userId, userMeta);
+
+  if (!tierCheck.allowed) {
+    return res.status(429).json({
+      error     : `Daily limit reached. You've used all ${CFG.FREE_DAILY_LIMIT} free questions today. Upgrade to Pro for unlimited access, or wait ${tierCheck.hoursLeft} hour${tierCheck.hoursLeft === 1 ? "" : "s"}.`,
+      freeLimit : true,
+      tier      : "free",
+      resetAt   : tierCheck.resetAt,
+      hoursLeft : tierCheck.hoursLeft,
+    });
+  }
+
+  // Send tier info and remaining questions to frontend
+  res.setHeader("X-User-Tier", tierCheck.tier);
+  if (!tierCheck.unlimited) {
+    res.setHeader("X-Free-Remaining", tierCheck.remaining);
+    res.setHeader("X-Free-Reset", tierCheck.resetAt);
   }
 
   // ── Validate request ──────────────────────────────────────────
@@ -698,8 +733,14 @@ app.post("/api/chat", agentGuard, safeAuth, async (req, res) => {
 
   // ── Safeguard 4 + 7: timeout + single retry ───────────────────
   const runAI = async () => {
+  // ── Model enforcement by tier ─────────────────────────────────
+  const requestedModel = model || "claude-sonnet-4-6";
+  const userRole = userMeta?.role || "free";
+  const isFree = userRole !== "admin" && userRole !== "pro";
+  const effectiveModel = isFree ? "claude-haiku-4-5-20251001" : requestedModel;
+
     const payload = {
-      model      : model || "claude-sonnet-4-6",
+      model      : effectiveModel,
       max_tokens : max_tokens || 8000,
       system     : effectiveSystem,
       messages,
